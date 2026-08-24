@@ -1,0 +1,145 @@
+import Foundation
+
+struct Chunk: Identifiable {
+    let id: Int
+    let text: String
+    let wordCount: Int
+}
+
+@MainActor
+final class RSVPEngine: ObservableObject {
+    @Published private(set) var chunks: [Chunk] = []
+    @Published private(set) var currentIndex: Int = 0
+    @Published private(set) var isPlaying: Bool = false
+    @Published var wordsPerMinute: Double = 300
+
+    @Published var wordsPerChunk: Int = 1 {
+        didSet {
+            guard oldValue != wordsPerChunk else { return }
+            rebuildChunks()
+        }
+    }
+
+    private var rawWords: [String] = []
+    private var workItem: DispatchWorkItem?
+
+    var progress: Double {
+        guard chunks.count > 1 else { return 0 }
+        return Double(currentIndex) / Double(chunks.count - 1)
+    }
+
+    var currentChunk: Chunk? {
+        guard chunks.indices.contains(currentIndex) else { return nil }
+        return chunks[currentIndex]
+    }
+
+    var totalWordCount: Int { rawWords.count }
+    var isFinished: Bool { !chunks.isEmpty && currentIndex >= chunks.count - 1 }
+
+    func load(words: [String]) {
+        pause()
+        rawWords = words
+        currentIndex = 0
+        rebuildChunks()
+    }
+
+    /// Jumps to a previously saved position (bookmark) without starting playback.
+    func restore(currentIndex: Int) {
+        pause()
+        self.currentIndex = chunks.isEmpty ? 0 : min(max(currentIndex, 0), chunks.count - 1)
+    }
+
+    private func rebuildChunks() {
+        let wasPlaying = isPlaying
+        pause()
+
+        var result: [Chunk] = []
+        var i = 0
+        var idCounter = 0
+        while i < rawWords.count {
+            let end = min(i + wordsPerChunk, rawWords.count)
+            let slice = rawWords[i..<end]
+            result.append(Chunk(id: idCounter, text: slice.joined(separator: " "), wordCount: slice.count))
+            idCounter += 1
+            i = end
+        }
+        chunks = result
+
+        currentIndex = min(currentIndex, max(chunks.count - 1, 0))
+        if wasPlaying { play() }
+    }
+
+    func play() {
+        guard !chunks.isEmpty else { return }
+        if currentIndex >= chunks.count - 1 { currentIndex = 0 }
+        isPlaying = true
+        scheduleNext()
+    }
+
+    func pause() {
+        isPlaying = false
+        workItem?.cancel()
+        workItem = nil
+    }
+
+    func togglePlay() {
+        isPlaying ? pause() : play()
+    }
+
+    func stepForward() {
+        pause()
+        guard currentIndex < chunks.count - 1 else { return }
+        currentIndex += 1
+    }
+
+    func stepBackward() {
+        pause()
+        guard currentIndex > 0 else { return }
+        currentIndex -= 1
+    }
+
+    func seek(to fraction: Double) {
+        pause()
+        guard !chunks.isEmpty else { return }
+        let idx = Int((fraction * Double(chunks.count - 1)).rounded())
+        currentIndex = min(max(idx, 0), chunks.count - 1)
+    }
+
+    func restart() {
+        pause()
+        currentIndex = 0
+    }
+
+    private func interval(for chunk: Chunk) -> TimeInterval {
+        let baseWordInterval = 60.0 / max(wordsPerMinute, 30)
+        var multiplier = Double(chunk.wordCount)
+
+        let trimmed = chunk.text.trimmingCharacters(in: .whitespaces)
+        if let last = trimmed.last {
+            if ".!?".contains(last) {
+                multiplier += 1.4
+            } else if ",;:".contains(last) {
+                multiplier += 0.6
+            }
+        }
+        if trimmed.count > 9 { multiplier += 0.2 }
+
+        return baseWordInterval * multiplier
+    }
+
+    private func scheduleNext() {
+        guard isPlaying, let chunk = currentChunk else { return }
+        let delay = interval(for: chunk)
+        let item = DispatchWorkItem { [weak self] in
+            guard let self, self.isPlaying else { return }
+            if self.currentIndex < self.chunks.count - 1 {
+                self.currentIndex += 1
+                self.scheduleNext()
+            } else {
+                self.pause()
+            }
+        }
+        workItem = item
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: item)
+    }
+}

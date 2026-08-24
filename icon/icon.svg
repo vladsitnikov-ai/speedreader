@@ -1,0 +1,30 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7A77F2"/>
+      <stop offset="100%" stop-color="#3A36A0"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.16"/>
+      <stop offset="45%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1024" height="1024" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1024" height="1024" fill="url(#gloss)"/>
+
+  <!-- top text line -->
+  <rect x="282" y="380" width="460" height="44" rx="22" fill="#FFFFFF" fill-opacity="0.30"/>
+  <!-- bottom text line -->
+  <rect x="332" y="600" width="360" height="44" rx="22" fill="#FFFFFF" fill-opacity="0.30"/>
+
+  <!-- active word bar -->
+  <rect x="232" y="472" width="560" height="80" rx="40" fill="#FFFFFF"/>
+
+  <!-- ORP pivot accent -->
+  <rect x="395" y="452" width="54" height="120" rx="27" fill="#FF6259"/>
+
+  <!-- tick marks -->
+  <rect x="414" y="372" width="16" height="48" rx="8" fill="#FF6259"/>
+  <rect x="414" y="604" width="16" height="48" rx="8" fill="#FF6259"/>
+</svg>
