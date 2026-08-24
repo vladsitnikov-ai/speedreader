@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ReaderContainerView: View {
     @ObservedObject var library: LibraryStore
+    @ObservedObject var quotes: QuoteStore
     let book: Book
     let onClose: () -> Void
 
@@ -28,7 +29,7 @@ struct ReaderContainerView: View {
                 ProgressView("Загружаю текст…")
                     .padding()
             } else {
-                ReaderView(engine: engine, documentTitle: book.title) {
+                ReaderView(engine: engine, documentTitle: book.title, onSaveQuote: saveCurrentQuote) {
                     saveProgress()
                     onClose()
                 }
@@ -58,5 +59,12 @@ struct ReaderContainerView: View {
     private func saveProgress() {
         guard !engine.chunks.isEmpty else { return }
         library.updateBookmark(chunkIndex: engine.currentIndex, totalChunks: engine.chunks.count, for: book.id)
+    }
+
+    @discardableResult
+    private func saveCurrentQuote() -> Bool {
+        guard let sentence = engine.currentSentence() else { return false }
+        quotes.add(text: sentence, bookID: book.id, bookTitle: book.title)
+        return true
     }
 }

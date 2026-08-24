@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct LibraryView: View {
     @ObservedObject var library: LibraryStore
     let onOpen: (Book) -> Void
+    let onOpenSettings: () -> Void
 
     @State private var isImporting = false
     @State private var errorMessage: String?
@@ -52,7 +53,14 @@ struct LibraryView: View {
         HStack {
             Text("Библиотека")
                 .font(.largeTitle.bold())
-            Spacer()
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            Spacer(minLength: 12)
+            Button(action: onOpenSettings) {
+                Image(systemName: "gearshape")
+            }
+            .buttonStyle(.plain)
+            .padding(.trailing, 12)
             Button {
                 isImporting = true
             } label: {

@@ -4,6 +4,9 @@ struct Chunk: Identifiable {
     let id: Int
     let text: String
     let wordCount: Int
+    /// Index range into the engine's flat word list, used to reconstruct surrounding context (e.g. for quotes).
+    let startWordIndex: Int
+    let endWordIndex: Int
 }
 
 @MainActor
@@ -59,7 +62,13 @@ final class RSVPEngine: ObservableObject {
         while i < rawWords.count {
             let end = min(i + wordsPerChunk, rawWords.count)
             let slice = rawWords[i..<end]
-            result.append(Chunk(id: idCounter, text: slice.joined(separator: " "), wordCount: slice.count))
+            result.append(Chunk(
+                id: idCounter,
+                text: slice.joined(separator: " "),
+                wordCount: slice.count,
+                startWordIndex: i,
+                endWordIndex: end
+            ))
             idCounter += 1
             i = end
         }
@@ -108,6 +117,28 @@ final class RSVPEngine: ObservableObject {
     func restart() {
         pause()
         currentIndex = 0
+    }
+
+    /// The sentence surrounding the current word — used by the "save to quotes" button.
+    func currentSentence() -> String? {
+        guard let chunk = currentChunk, rawWords.indices.contains(chunk.startWordIndex) else { return nil }
+
+        var start = chunk.startWordIndex
+        while start > 0, !endsSentence(rawWords[start - 1]) {
+            start -= 1
+        }
+
+        var end = chunk.startWordIndex
+        while end < rawWords.count - 1, !endsSentence(rawWords[end]) {
+            end += 1
+        }
+
+        return rawWords[start...end].joined(separator: " ")
+    }
+
+    private func endsSentence(_ word: String) -> Bool {
+        guard let last = word.trimmingCharacters(in: .whitespaces).last else { return false }
+        return ".!?".contains(last)
     }
 
     private func interval(for chunk: Chunk) -> TimeInterval {

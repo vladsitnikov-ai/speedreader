@@ -3,7 +3,10 @@ import SwiftUI
 struct ReaderView: View {
     @ObservedObject var engine: RSVPEngine
     let documentTitle: String
+    let onSaveQuote: () -> Bool
     let onClose: () -> Void
+
+    @State private var justSavedQuote = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -57,7 +60,24 @@ struct ReaderView: View {
 
             Spacer()
 
-            Color.clear.frame(width: 90)
+            Button(action: saveQuote) {
+                Image(systemName: justSavedQuote ? "checkmark.circle.fill" : "quote.bubble")
+                    .font(.system(size: 18))
+                    .frame(width: 90, height: 44, alignment: .trailing)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(engine.currentChunk == nil)
+            .accessibilityLabel("Сохранить в цитатник")
+        }
+    }
+
+    private func saveQuote() {
+        guard onSaveQuote() else { return }
+        justSavedQuote = true
+        Task {
+            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            justSavedQuote = false
         }
     }
 
