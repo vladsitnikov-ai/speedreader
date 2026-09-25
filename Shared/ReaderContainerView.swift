@@ -85,7 +85,7 @@ struct ReaderContainerView: View {
                 onClose: { isShowingBookmarks = false }
             )
         }
-        .sheet(isPresented: $isShowingPDF) {
+        .fullScreenPresentation(isPresented: $isShowingPDF) {
             PDFCheckView(
                 url: library.pdfURL(for: book),
                 pageIndex: engine.currentPageIndex ?? 0,
@@ -168,5 +168,18 @@ struct ReaderContainerView: View {
             printedPage: engine.currentPrintedPage
         )
         return true
+    }
+}
+
+private extension View {
+    /// Full screen on iPhone and iPad (a form sheet is too small to read a PDF page),
+    /// a regular sheet window on macOS.
+    @ViewBuilder
+    func fullScreenPresentation<Content: View>(isPresented: Binding<Bool>, @ViewBuilder content: @escaping () -> Content) -> some View {
+        #if os(macOS)
+        self.sheet(isPresented: isPresented, content: content)
+        #else
+        self.fullScreenCover(isPresented: isPresented, content: content)
+        #endif
     }
 }
