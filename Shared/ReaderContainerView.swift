@@ -9,6 +9,7 @@ struct ReaderContainerView: View {
     @StateObject private var engine = RSVPEngine()
     @State private var isLoading = true
     @State private var errorMessage: String?
+    @State private var isShowingPDF = false
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -29,10 +30,22 @@ struct ReaderContainerView: View {
                 ProgressView("Загружаю текст…")
                     .padding()
             } else {
-                ReaderView(engine: engine, documentTitle: book.title, onSaveQuote: saveCurrentQuote) {
+                ReaderView(engine: engine, documentTitle: book.title, onSaveQuote: saveCurrentQuote, onOpenPDF: openPDF) {
                     saveProgress()
                     onClose()
                 }
+            }
+        }
+        .sheet(isPresented: $isShowingPDF) {
+            PDFCheckView(
+                url: library.pdfURL(for: book),
+                pageIndex: engine.currentPageIndex ?? 0,
+                pageLabel: engine.currentPageLabel,
+                sentence: engine.currentSentence(),
+                word: engine.currentChunk?.text,
+                title: book.title
+            ) {
+                isShowingPDF = false
             }
         }
         .task { await loadBook() }
@@ -58,6 +71,12 @@ struct ReaderContainerView: View {
             errorMessage = error.localizedDescription
             isLoading = false
         }
+    }
+
+    private func openPDF() {
+        engine.pause()
+        saveProgress()
+        isShowingPDF = true
     }
 
     private func saveProgress() {

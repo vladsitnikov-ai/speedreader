@@ -5,6 +5,7 @@ struct ReaderView: View {
     @EnvironmentObject private var settings: AppSettings
     let documentTitle: String
     let onSaveQuote: () -> Bool
+    let onOpenPDF: () -> Void
     let onClose: () -> Void
 
     @State private var justSavedQuote = false
@@ -64,15 +65,27 @@ struct ReaderView: View {
 
             Spacer()
 
-            Button(action: saveQuote) {
-                Image(systemName: justSavedQuote ? "checkmark.circle.fill" : "quote.bubble")
-                    .font(.system(size: 18))
-                    .frame(width: 90, height: 44, alignment: .trailing)
-                    .contentShape(Rectangle())
+            HStack(spacing: 4) {
+                Button(action: onOpenPDF) {
+                    Image(systemName: "doc.text.magnifyingglass")
+                        .font(.system(size: 18))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .disabled(engine.currentChunk == nil)
+                .accessibilityLabel("Открыть это место в PDF")
+
+                Button(action: saveQuote) {
+                    Image(systemName: justSavedQuote ? "checkmark.circle.fill" : "quote.bubble")
+                        .font(.system(size: 18))
+                        .frame(width: 44, height: 44, alignment: .trailing)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .disabled(engine.currentChunk == nil)
+                .accessibilityLabel("Сохранить в цитатник")
             }
-            .buttonStyle(.plain)
-            .disabled(engine.currentChunk == nil)
-            .accessibilityLabel("Сохранить в цитатник")
         }
     }
 
