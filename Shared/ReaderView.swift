@@ -156,7 +156,7 @@ struct ReaderView: View {
                 in: 0...1
             )
             HStack {
-                Text("\(min(engine.currentIndex + 1, engine.chunks.count)) / \(max(engine.chunks.count, 1))")
+                Text("\(String(min(engine.currentIndex + 1, engine.chunks.count))) / \(String(max(engine.chunks.count, 1)))")
                 if let page = engine.currentPageLabel {
                     Text("· стр. \(page)")
                 }
