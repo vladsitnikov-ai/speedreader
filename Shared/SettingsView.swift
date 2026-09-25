@@ -4,6 +4,13 @@ struct SettingsView: View {
     @ObservedObject var settings: AppSettings
     let onClose: () -> Void
 
+    private static var versionString: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? ""
+        let build = info?["CFBundleVersion"] as? String ?? ""
+        return build.isEmpty ? version : "\(version) (\(build))"
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -29,13 +36,18 @@ struct SettingsView: View {
 
                 Section("О приложении") {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("SpeedReader")
+                        Text("SpeedReader \(Self.versionString)")
                             .font(.headline)
-                        Text("Сделано Владом Ситниковым.")
+                        Text("Автор — Влад Ситников.")
+                            .font(.body)
+                        Text("Идея приложения вдохновлена Антоном Булановым и его новой книгой «Природа хитрости».")
                             .font(.body)
                             .foregroundStyle(.secondary)
                         Link(destination: URL(string: "https://vladsitnikov.com")!) {
                             Label("vladsitnikov.com", systemImage: "link")
+                        }
+                        Link(destination: URL(string: "https://github.com/vladsitnikov-ai/speedreader")!) {
+                            Label("Исходный код и обновления", systemImage: "chevron.left.forwardslash.chevron.right")
                         }
                     }
                     .padding(.vertical, 4)
