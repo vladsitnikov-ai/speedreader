@@ -3,18 +3,20 @@ import SwiftUI
 private enum Screen: Equatable {
     case library
     case pageSelection(UUID)
-    case reading(UUID)
+    /// `startWordIndex` opens the book at a bookmark instead of the saved position.
+    case reading(UUID, startWordIndex: Int?)
 }
 
 struct ContentView: View {
     @StateObject private var library = LibraryStore()
     @StateObject private var quotes = QuoteStore()
+    @StateObject private var bookmarks = BookmarkStore()
     @StateObject private var settings = AppSettings()
     @State private var isSettingsPresented = false
 
     var body: some View {
         TabView {
-            LibraryFlow(library: library, quotes: quotes, onOpenSettings: { isSettingsPresented = true })
+            LibraryFlow(library: library, quotes: quotes, bookmarks: bookmarks, onOpenSettings: { isSettingsPresented = true })
                 .tabItem { Label("Библиотека", systemImage: "books.vertical") }
 
             QuotesView(quotes: quotes, library: library)
@@ -34,15 +36,23 @@ struct ContentView: View {
 private struct LibraryFlow: View {
     @ObservedObject var library: LibraryStore
     @ObservedObject var quotes: QuoteStore
+    @ObservedObject var bookmarks: BookmarkStore
     let onOpenSettings: () -> Void
 
     @State private var screen: Screen = .library
+    @State private var bookForBookmarks: Book?
 
     var body: some View {
         Group {
             switch screen {
             case .library:
-                LibraryView(library: library, onOpen: open, onOpenSettings: onOpenSettings)
+                LibraryView(
+                    library: library,
+                    bookmarks: bookmarks,
+                    onOpen: { open($0) },
+                    onShowBookmarks: { bookForBookmarks = $0 },
+                    onOpenSettings: onOpenSettings
+                )
 
             case .pageSelection(let id):
                 // Always resolved fresh from the store rather than captured once, so a stale
@@ -50,7 +60,7 @@ private struct LibraryFlow: View {
                 if let book = library.books.first(where: { $0.id == id }) {
                     PageSelectionView(book: book, pdfURL: library.pdfURL(for: book)) { pages in
                         library.updateSelectedPages(pages, for: book.id)
-                        screen = .reading(book.id)
+                        screen = .reading(book.id, startWordIndex: nil)
                     } onCancel: {
                         screen = .library
                     }
@@ -58,9 +68,15 @@ private struct LibraryFlow: View {
                     Color.clear.onAppear { screen = .library }
                 }
 
-            case .reading(let id):
+            case .reading(let id, let startWordIndex):
                 if let book = library.books.first(where: { $0.id == id }) {
-                    ReaderContainerView(library: library, quotes: quotes, book: book) {
+                    ReaderContainerView(
+                        library: library,
+                        quotes: quotes,
+                        bookmarkStore: bookmarks,
+                        book: book,
+                        startWordIndex: startWordIndex
+                    ) {
                         screen = .library
                     }
                 } else {
@@ -68,10 +84,23 @@ private struct LibraryFlow: View {
                 }
             }
         }
+        .sheet(item: $bookForBookmarks) { book in
+            BookmarksView(
+                bookTitle: book.title,
+                bookmarks: bookmarks.bookmarks(for: book.id),
+                onSelect: { bookmark in
+                    bookForBookmarks = nil
+                    open(book, at: bookmark.wordIndex)
+                },
+                onRename: { bookmark, name in bookmarks.rename(bookmark, to: name) },
+                onDelete: { bookmarks.delete($0) },
+                onClose: { bookForBookmarks = nil }
+            )
+        }
     }
 
-    private func open(_ book: Book) {
-        screen = book.isConfigured ? .reading(book.id) : .pageSelection(book.id)
+    private func open(_ book: Book, at wordIndex: Int? = nil) {
+        screen = book.isConfigured ? .reading(book.id, startWordIndex: wordIndex) : .pageSelection(book.id)
     }
 }
 

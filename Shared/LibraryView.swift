@@ -3,7 +3,9 @@ import UniformTypeIdentifiers
 
 struct LibraryView: View {
     @ObservedObject var library: LibraryStore
+    @ObservedObject var bookmarks: BookmarkStore
     let onOpen: (Book) -> Void
+    let onShowBookmarks: (Book) -> Void
     let onOpenSettings: () -> Void
 
     @State private var isImporting = false
@@ -101,19 +103,28 @@ struct LibraryView: View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 20)], spacing: 24) {
                 ForEach(library.books) { book in
-                    BookCell(book: book, thumbnailURL: library.thumbnailURL(for: book))
+                    BookCell(
+                        book: book,
+                        thumbnailURL: library.thumbnailURL(for: book),
+                        bookmarkCount: bookmarks.bookmarks(for: book.id).count
+                    )
                         .contentShape(Rectangle())
                         .onTapGesture { onOpen(book) }
                         .contextMenu {
                             Button {
-                                bookForInfo = book
-                            } label: {
-                                Label("Сведения об издании…", systemImage: "info.circle")
-                            }
-                            Button {
                                 onOpen(book)
                             } label: {
                                 Label("Читать", systemImage: "book")
+                            }
+                            Button {
+                                onShowBookmarks(book)
+                            } label: {
+                                Label("Закладки…", systemImage: "bookmark")
+                            }
+                            Button {
+                                bookForInfo = book
+                            } label: {
+                                Label("Сведения об издании…", systemImage: "info.circle")
                             }
                             Divider()
                             Button(role: .destructive) {
@@ -147,6 +158,7 @@ struct LibraryView: View {
 private struct BookCell: View {
     let book: Book
     let thumbnailURL: URL
+    var bookmarkCount: Int = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -185,6 +197,12 @@ private struct BookCell: View {
                     .foregroundStyle(.secondary)
             } else {
                 Text("\(book.selectedPages.count) стр. выбрано")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            if bookmarkCount > 0 {
+                Label("\(bookmarkCount)", systemImage: "bookmark.fill")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

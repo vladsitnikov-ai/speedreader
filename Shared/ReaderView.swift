@@ -4,8 +4,12 @@ struct ReaderView: View {
     @ObservedObject var engine: RSVPEngine
     @EnvironmentObject private var settings: AppSettings
     let documentTitle: String
+    let bookmarks: [Bookmark]
     let onSaveQuote: () -> Bool
     let onOpenPDF: () -> Void
+    let onAddBookmark: () -> Void
+    let onJumpToBookmark: (Bookmark) -> Void
+    let onShowBookmarks: () -> Void
     let onClose: () -> Void
 
     @State private var justSavedQuote = false
@@ -66,6 +70,42 @@ struct ReaderView: View {
             Spacer()
 
             HStack(spacing: 4) {
+                Menu {
+                    Button(action: onAddBookmark) {
+                        Label("Добавить закладку здесь", systemImage: "bookmark.fill")
+                    }
+                    .disabled(engine.currentChunk == nil)
+
+                    if !bookmarks.isEmpty {
+                        Divider()
+                        ForEach(bookmarks.prefix(8)) { bookmark in
+                            Button {
+                                onJumpToBookmark(bookmark)
+                            } label: {
+                                if let page = bookmark.pageLabel {
+                                    Text("\(bookmark.title) · стр. \(page)")
+                                } else {
+                                    Text(bookmark.title)
+                                }
+                            }
+                        }
+                    }
+
+                    Divider()
+                    Button(action: onShowBookmarks) {
+                        Label(bookmarks.isEmpty ? "Все закладки…" : "Все закладки (\(bookmarks.count))…", systemImage: "list.bullet")
+                    }
+                } label: {
+                    Image(systemName: bookmarks.isEmpty ? "bookmark" : "bookmark.fill")
+                        .font(.system(size: 18))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .plainMenuStyle()
+                .menuIndicator(.hidden)
+                .fixedSize()
+                .accessibilityLabel("Закладки")
+
                 Button(action: onOpenPDF) {
                     Image(systemName: "doc.text.magnifyingglass")
                         .font(.system(size: 18))
@@ -178,5 +218,17 @@ struct ReaderView: View {
     private func adjustSpeed(by delta: Double) {
         let target = engine.wordsPerMinute + delta
         engine.wordsPerMinute = min(Self.speedRange.upperBound, max(Self.speedRange.lowerBound, target))
+    }
+}
+
+private extension View {
+    /// An icon-only menu: no button chrome on macOS, the default (already plain) look on iOS.
+    @ViewBuilder
+    func plainMenuStyle() -> some View {
+        #if os(macOS)
+        self.menuStyle(.borderlessButton)
+        #else
+        self
+        #endif
     }
 }

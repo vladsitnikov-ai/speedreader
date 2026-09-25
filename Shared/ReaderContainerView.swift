@@ -3,13 +3,18 @@ import SwiftUI
 struct ReaderContainerView: View {
     @ObservedObject var library: LibraryStore
     @ObservedObject var quotes: QuoteStore
+    @ObservedObject var bookmarkStore: BookmarkStore
     let book: Book
+    /// When set, reading starts at this word (a bookmark) instead of the saved position.
+    var startWordIndex: Int? = nil
     let onClose: () -> Void
 
     @StateObject private var engine = RSVPEngine()
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var isShowingPDF = false
+    @State private var isShowingBookmarks = false
+    @State private var isNamingBookmark = false
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -30,11 +35,45 @@ struct ReaderContainerView: View {
                 ProgressView("Загружаю текст…")
                     .padding()
             } else {
-                ReaderView(engine: engine, documentTitle: book.title, onSaveQuote: saveCurrentQuote, onOpenPDF: openPDF) {
+                ReaderView(
+                    engine: engine,
+                    documentTitle: book.title,
+                    bookmarks: bookmarkStore.bookmarks(for: book.id),
+                    onSaveQuote: saveCurrentQuote,
+                    onOpenPDF: openPDF,
+                    onAddBookmark: { engine.pause(); isNamingBookmark = true },
+                    onJumpToBookmark: { engine.seek(toWordIndex: $0.wordIndex) },
+                    onShowBookmarks: { engine.pause(); isShowingBookmarks = true }
+                ) {
                     saveProgress()
                     onClose()
                 }
             }
+        }
+        .sheet(isPresented: $isNamingBookmark) {
+            BookmarkNameView(
+                title: "Новая закладка",
+                defaultName: defaultBookmarkName(),
+                pageLabel: engine.currentPageLabel
+            ) { name in
+                addBookmark(named: name)
+                isNamingBookmark = false
+            } onCancel: {
+                isNamingBookmark = false
+            }
+        }
+        .sheet(isPresented: $isShowingBookmarks) {
+            BookmarksView(
+                bookTitle: book.title,
+                bookmarks: bookmarkStore.bookmarks(for: book.id),
+                onSelect: { bookmark in
+                    isShowingBookmarks = false
+                    engine.seek(toWordIndex: bookmark.wordIndex)
+                },
+                onRename: { bookmark, name in bookmarkStore.rename(bookmark, to: name) },
+                onDelete: { bookmarkStore.delete($0) },
+                onClose: { isShowingBookmarks = false }
+            )
         }
         .sheet(isPresented: $isShowingPDF) {
             PDFCheckView(
@@ -65,12 +104,35 @@ struct ReaderContainerView: View {
                 pageIndices: extracted.wordPageIndices,
                 printedPages: extracted.printedPageNumbers
             )
-            engine.restore(currentIndex: book.bookmarkChunkIndex)
+            if let startWordIndex {
+                engine.seek(toWordIndex: startWordIndex)
+            } else {
+                engine.restore(currentIndex: book.bookmarkChunkIndex)
+            }
             isLoading = false
         } catch {
             errorMessage = error.localizedDescription
             isLoading = false
         }
+    }
+
+    /// The first few words of the current sentence, as a suggested bookmark name.
+    private func defaultBookmarkName() -> String {
+        let source = engine.currentSentence() ?? engine.currentChunk?.text ?? ""
+        let words = source.split(whereSeparator: { $0.isWhitespace })
+        let head = words.prefix(6).joined(separator: " ")
+        return words.count > 6 ? head + "…" : head
+    }
+
+    private func addBookmark(named name: String) {
+        guard let wordIndex = engine.currentWordIndex else { return }
+        bookmarkStore.add(
+            title: name,
+            bookID: book.id,
+            wordIndex: wordIndex,
+            pdfPage: engine.currentPageIndex.map { $0 + 1 },
+            printedPage: engine.currentPrintedPage
+        )
     }
 
     private func openPDF() {

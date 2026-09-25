@@ -43,6 +43,20 @@ final class RSVPEngine: ObservableObject {
     var totalWordCount: Int { rawWords.count }
     var isFinished: Bool { !chunks.isEmpty && currentIndex >= chunks.count - 1 }
 
+    /// Index into the word list of the first word on screen.
+    var currentWordIndex: Int? { currentChunk?.startWordIndex }
+
+    /// Jumps to the chunk containing the given word (a bookmark), pausing playback.
+    func seek(toWordIndex wordIndex: Int) {
+        pause()
+        guard !chunks.isEmpty else { return }
+        if let index = chunks.firstIndex(where: { $0.startWordIndex <= wordIndex && wordIndex < $0.endWordIndex }) {
+            currentIndex = index
+        } else {
+            currentIndex = wordIndex < 0 ? 0 : chunks.count - 1
+        }
+    }
+
     /// 0-based PDF page index of the word currently on screen.
     var currentPageIndex: Int? {
         guard let chunk = currentChunk, wordPages.indices.contains(chunk.startWordIndex) else { return nil }
