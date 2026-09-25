@@ -25,6 +25,7 @@
 		66D183300706976BE639B681 /* FindPlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF6541A5F114ABD010C0CFC /* FindPlaceView.swift */; };
 		6B5E2BC3AC82F3C6CE4A2F47 /* PlatformClipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8831198DF45091AF3E3488 /* PlatformClipboard.swift */; };
 		70F1DE8651B18B244D188250 /* QuoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8091995464313C9BD7C5643 /* QuoteStore.swift */; };
+		7104D8106BC5981BB23F6540 /* LaunchOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60C1BD6BD30E042D6A2B568D /* LaunchOptions.swift */; };
 		74DE0B12E0B6D9C0F19520EB /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 690B972321F2886EAD737092 /* AppSettings.swift */; };
 		7C4D12DBBD1CF248DEEC891F /* BookInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E2579C7D1F36F6F12887A89 /* BookInfoView.swift */; };
 		8634276D563B8C65C810D203 /* PlatformImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8320114F6F28FC675215D516 /* PlatformImage.swift */; };
@@ -41,6 +42,7 @@
 		B80ED0F26A9110DDB12E596F /* ORPWordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78D1B8ADA1AF0C5316B9E81 /* ORPWordView.swift */; };
 		BA8B57570666CB7290A193E2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64675BCFC0FB1E613723E6A2 /* SettingsView.swift */; };
 		C116069AA5E036B858AD78E5 /* Book.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D889B47FAD3BD3831182F95 /* Book.swift */; };
+		C25CF934094F9C46F8AAFF76 /* LaunchOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60C1BD6BD30E042D6A2B568D /* LaunchOptions.swift */; };
 		C4DD408AC24E0DE73DA75718 /* Book.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D889B47FAD3BD3831182F95 /* Book.swift */; };
 		C5EA4AE4B9B36CD132185808 /* SpeedReaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF399B3C9BB6AE553263748B /* SpeedReaderApp.swift */; };
 		C9FA046A3D7EC1122C750C1E /* ReaderContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95144B9948CEF794DE23DF0 /* ReaderContainerView.swift */; };
@@ -66,6 +68,7 @@
 		543CCD6E5023D4FF31493A92 /* QuotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuotesView.swift; sourceTree = "<group>"; };
 		5B51287CDEB533B928423644 /* BookmarksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksView.swift; sourceTree = "<group>"; };
 		60B19307A43BFB83C8FB8346 /* LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryStore.swift; sourceTree = "<group>"; };
+		60C1BD6BD30E042D6A2B568D /* LaunchOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchOptions.swift; sourceTree = "<group>"; };
 		642CF1F65412B09F3568C52B /* PageSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageSelectionView.swift; sourceTree = "<group>"; };
 		64675BCFC0FB1E613723E6A2 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		690B972321F2886EAD737092 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
@@ -106,6 +109,7 @@
 				5B51287CDEB533B928423644 /* BookmarksView.swift */,
 				BA5F6D2C41B52E20DD872D2A /* ContentView.swift */,
 				3FF6541A5F114ABD010C0CFC /* FindPlaceView.swift */,
+				60C1BD6BD30E042D6A2B568D /* LaunchOptions.swift */,
 				60B19307A43BFB83C8FB8346 /* LibraryStore.swift */,
 				D51C7F9B0D3B54CE29B2BC50 /* LibraryView.swift */,
 				B78D1B8ADA1AF0C5316B9E81 /* ORPWordView.swift */,
@@ -244,6 +248,7 @@
 				A995AE2B0BD091EB228EADB9 /* BookmarksView.swift in Sources */,
 				042ECE88D66628F70A3DDAD9 /* ContentView.swift in Sources */,
 				66D183300706976BE639B681 /* FindPlaceView.swift in Sources */,
+				7104D8106BC5981BB23F6540 /* LaunchOptions.swift in Sources */,
 				5B0ECE63CEBDA0627C25B83A /* LibraryStore.swift in Sources */,
 				DB8E07ACD1D85F1D7DEB8DAA /* LibraryView.swift in Sources */,
 				ED90FD12B2E1E43008180538 /* ORPWordView.swift in Sources */,
@@ -274,6 +279,7 @@
 				ABEBC4A9E9539E6DB0906D66 /* BookmarksView.swift in Sources */,
 				CEB9D99B67CA8FA0104CEBAA /* ContentView.swift in Sources */,
 				9586811129FDA5EDF65F11B6 /* FindPlaceView.swift in Sources */,
+				C25CF934094F9C46F8AAFF76 /* LaunchOptions.swift in Sources */,
 				147168BAB7375A861C076050 /* LibraryStore.swift in Sources */,
 				D8000740617D32F1F746F5AD /* LibraryView.swift in Sources */,
 				B80ED0F26A9110DDB12E596F /* ORPWordView.swift in Sources */,
@@ -310,7 +316,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.vladsitnikov.speedreader.mac;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vladsitnikov.speedreader.ios;
 				PRODUCT_NAME = SpeedReader;
 				SDKROOT = macosx;
 				SUPPORTS_MACCATALYST = NO;
@@ -512,7 +518,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.vladsitnikov.speedreader.mac;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vladsitnikov.speedreader.ios;
 				PRODUCT_NAME = SpeedReader;
 				SDKROOT = macosx;
 				SUPPORTS_MACCATALYST = NO;

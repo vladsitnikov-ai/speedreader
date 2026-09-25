@@ -13,14 +13,19 @@ struct ContentView: View {
     @StateObject private var bookmarks = BookmarkStore()
     @StateObject private var settings = AppSettings()
     @State private var isSettingsPresented = false
+    @State private var selectedTab: Tab = LaunchOptions.startsOnQuotes ? .quotes : .library
+
+    private enum Tab: Hashable { case library, quotes }
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             LibraryFlow(library: library, quotes: quotes, bookmarks: bookmarks, onOpenSettings: { isSettingsPresented = true })
                 .tabItem { Label("Библиотека", systemImage: "books.vertical") }
+                .tag(Tab.library)
 
             QuotesView(quotes: quotes, library: library)
                 .tabItem { Label("Цитатник", systemImage: "quote.bubble") }
+                .tag(Tab.quotes)
         }
         .environmentObject(settings)
         .preferredColorScheme(settings.theme.colorScheme)
@@ -39,8 +44,20 @@ private struct LibraryFlow: View {
     @ObservedObject var bookmarks: BookmarkStore
     let onOpenSettings: () -> Void
 
-    @State private var screen: Screen = .library
+    @State private var screen: Screen
     @State private var bookForBookmarks: Book?
+
+    init(library: LibraryStore, quotes: QuoteStore, bookmarks: BookmarkStore, onOpenSettings: @escaping () -> Void) {
+        self.library = library
+        self.quotes = quotes
+        self.bookmarks = bookmarks
+        self.onOpenSettings = onOpenSettings
+        if LaunchOptions.openFirstBook, let book = library.books.first(where: { $0.isConfigured }) {
+            _screen = State(initialValue: .reading(book.id, startWordIndex: nil))
+        } else {
+            _screen = State(initialValue: .library)
+        }
+    }
 
     var body: some View {
         Group {

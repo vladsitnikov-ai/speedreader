@@ -121,6 +121,9 @@ struct ReaderContainerView: View {
                 engine.restore(currentIndex: book.bookmarkChunkIndex)
             }
             isLoading = false
+            if LaunchOptions.showPDF {
+                isShowingPDF = true
+            }
         } catch {
             errorMessage = error.localizedDescription
             isLoading = false

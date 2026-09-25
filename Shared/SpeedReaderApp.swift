@@ -7,7 +7,7 @@ struct SpeedReaderApp: App {
             ContentView()
         }
         #if os(macOS)
-        .defaultSize(width: 640, height: 580)
+        .defaultSize(width: 1440, height: 900)
         #endif
     }
 }
