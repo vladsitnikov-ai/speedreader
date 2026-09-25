@@ -309,11 +309,99 @@ func finalize(platform: String, versionString: String) throws {
     print("CONTENT RIGHTS set")
 }
 
+// MARK: - Prepare for submission (review contact, copyright, privacy answers, price)
+
+func prepare(platform: String, versionString: String) throws {
+    let app = try findApp()
+    let appID = id(app)
+    guard let version = try versions(appID: appID, platform: platform).first(where: { (attrs($0)["versionString"] as? String) == versionString }) else {
+        throw APIError(status: 404, body: "no \(platform) version \(versionString)")
+    }
+    let versionID = id(version)
+
+    // Copyright line.
+    try request("PATCH", "/v1/appStoreVersions/\(versionID)", json: ["data": ["type": "appStoreVersions", "id": versionID, "attributes": ["copyright": "\(Calendar.current.component(.year, from: Date())) Влад Ситников"]]])
+    print("COPYRIGHT set")
+
+    // App Review contact: no demo account needed (there is no sign-in).
+    let contact: [String: Any] = [
+        "contactFirstName": "Vlad", "contactLastName": "Sitnikov", "contactEmail": "vlad.sitnikov@gmail.com",
+        "demoAccountRequired": false,
+        "notes": "Приложение не требует входа. Для проверки: «Добавить PDF» → выбрать любой PDF с текстовым слоем → выбрать страницы → «Начать чтение». / No sign-in. To test: Add PDF → pick any text PDF → choose pages → Start reading.",
+    ]
+    let details = try request("GET", "/v1/appStoreVersions/\(versionID)/appStoreReviewDetail")
+    if let detailID = (details["data"] as? [String: Any]).map(id), !detailID.isEmpty {
+        try request("PATCH", "/v1/appStoreReviewDetails/\(detailID)", json: ["data": ["type": "appStoreReviewDetails", "id": detailID, "attributes": contact]])
+    } else {
+        try request("POST", "/v1/appStoreReviewDetails", json: ["data": ["type": "appStoreReviewDetails", "attributes": contact, "relationships": ["appStoreVersion": ["data": ["type": "appStoreVersions", "id": versionID]]]]])
+    }
+    print("REVIEW CONTACT set")
+
+    // App privacy ("Data Not Collected") is not part of the public API — it has to be
+    // answered once in App Store Connect → App Privacy. Nothing to do here.
+    print("PRIVACY: answer manually in App Store Connect → App Privacy → Data Not Collected")
+
+    // Price: free, worldwide.
+    let points = items(try request("GET", "/v1/apps/\(appID)/appPricePoints", query: ["filter[territory]": "USA", "limit": "200"]))
+    guard let free = points.first(where: { (attrs($0)["customerPrice"] as? String).map { Double($0) == 0 } ?? false }) else {
+        throw APIError(status: 404, body: "no free price point")
+    }
+    try request("POST", "/v1/appPriceSchedules", json: [
+        "data": ["type": "appPriceSchedules", "relationships": [
+            "app": ["data": ["type": "apps", "id": appID]],
+            "baseTerritory": ["data": ["type": "territories", "id": "USA"]],
+            "manualPrices": ["data": [["type": "appPrices", "id": "${price0}"]]],
+        ]],
+        "included": [["type": "appPrices", "id": "${price0}", "attributes": ["startDate": NSNull()], "relationships": ["appPricePoint": ["data": ["type": "appPricePoints", "id": id(free)]]]]],
+    ])
+    print("PRICE set: free")
+}
+
+// MARK: - Submit for review
+
+func submit(platform: String, versionString: String) throws {
+    let app = try findApp()
+    let appID = id(app)
+    guard let version = try versions(appID: appID, platform: platform).first(where: { (attrs($0)["versionString"] as? String) == versionString }) else {
+        throw APIError(status: 404, body: "no \(platform) version \(versionString)")
+    }
+    // Reuse an open submission for this platform if there is one, otherwise start a new one.
+    let open = items(try request("GET", "/v1/apps/\(appID)/reviewSubmissions", query: ["filter[platform]": platform, "filter[state]": "READY_FOR_REVIEW,WAITING_FOR_REVIEW,IN_REVIEW,UNRESOLVED_ISSUES"]))
+    var submissionID: String
+    if let existing = open.first {
+        submissionID = id(existing)
+        print("SUBMISSION \(submissionID) state=\(attrs(existing)["state"] ?? "") (existing)")
+    } else {
+        let created = try request("POST", "/v1/reviewSubmissions", json: ["data": ["type": "reviewSubmissions", "attributes": ["platform": platform], "relationships": ["app": ["data": ["type": "apps", "id": appID]]]]])
+        submissionID = id(created["data"] as? [String: Any] ?? [:])
+        print("SUBMISSION \(submissionID) created")
+    }
+    let itemsInSubmission = items(try request("GET", "/v1/reviewSubmissions/\(submissionID)/items"))
+    if itemsInSubmission.isEmpty {
+        try request("POST", "/v1/reviewSubmissionItems", json: ["data": ["type": "reviewSubmissionItems", "relationships": [
+            "reviewSubmission": ["data": ["type": "reviewSubmissions", "id": submissionID]],
+            "appStoreVersion": ["data": ["type": "appStoreVersions", "id": id(version)]],
+        ]]])
+        print("ITEM added: \(platform) \(versionString)")
+    }
+    try request("PATCH", "/v1/reviewSubmissions/\(submissionID)", json: ["data": ["type": "reviewSubmissions", "id": submissionID, "attributes": ["submitted": true]]])
+    print("SUBMITTED \(platform) \(versionString) for review")
+}
+
 // MARK: - Main
 
 let arguments = CommandLine.arguments.dropFirst()
 do {
     switch arguments.first {
+    case "submit":
+        guard arguments.count >= 3 else { print("usage: asc submit <IOS|MAC_OS> <version>"); exit(1) }
+        try submit(platform: Array(arguments)[1], versionString: Array(arguments)[2])
+    case "prepare":
+        guard arguments.count >= 3 else { print("usage: asc prepare <IOS|MAC_OS> <version>"); exit(1) }
+        try prepare(platform: Array(arguments)[1], versionString: Array(arguments)[2])
+    case "get":
+        let response = try request("GET", Array(arguments)[1])
+        print(String(data: try JSONSerialization.data(withJSONObject: response, options: .prettyPrinted), encoding: .utf8) ?? "")
     case "status":
         try status()
     case "sync":
