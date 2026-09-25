@@ -266,8 +266,8 @@ func finalize(platform: String, versionString: String) throws {
     let appID = id(app)
 
     // Attach the newest processed build of this version to the App Store version.
-    let builds = items(try request("GET", "/v1/builds", query: ["filter[app]": appID, "filter[processingState]": "VALID", "sort": "-uploadedDate", "limit": "10"]))
-    guard let build = builds.first(where: { (attrs($0)["version"] as? String) != nil }) else { throw APIError(status: 404, body: "no processed build") }
+    let builds = items(try request("GET", "/v1/builds", query: ["filter[app]": appID, "filter[processingState]": "VALID", "filter[preReleaseVersion.platform]": platform, "sort": "-uploadedDate", "limit": "10"]))
+    guard let build = builds.first else { throw APIError(status: 404, body: "no processed \(platform) build") }
     let version = try editableVersion(appID: appID, platform: platform, versionString: versionString)
     try request("PATCH", "/v1/appStoreVersions/\(id(version))/relationships/build", json: ["data": ["type": "builds", "id": id(build)]])
     print("BUILD \(attrs(build)["version"] ?? "") attached to \(platform) \(versionString)")
@@ -399,6 +399,12 @@ do {
     case "prepare":
         guard arguments.count >= 3 else { print("usage: asc prepare <IOS|MAC_OS> <version>"); exit(1) }
         try prepare(platform: Array(arguments)[1], versionString: Array(arguments)[2])
+    case "builds":
+        let platform = arguments.count >= 2 ? Array(arguments)[1] : "IOS"
+        let appID = id(try findApp())
+        for b in items(try request("GET", "/v1/builds", query: ["filter[app]": appID, "filter[preReleaseVersion.platform]": platform, "sort": "-uploadedDate", "limit": "5"])) {
+            print("BUILD \(attrs(b)["version"] ?? "") state=\(attrs(b)["processingState"] ?? "") id=\(id(b))")
+        }
     case "get":
         let response = try request("GET", Array(arguments)[1])
         print(String(data: try JSONSerialization.data(withJSONObject: response, options: .prettyPrinted), encoding: .utf8) ?? "")
