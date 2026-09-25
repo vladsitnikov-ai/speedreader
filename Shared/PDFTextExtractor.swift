@@ -8,6 +8,16 @@ enum PDFTextExtractor {
         let wordPageIndices: [Int]
         /// PDF page index → page number as printed on the page, when one was detected.
         let printedPageNumbers: [Int: String]
+        /// Chapter starts: the PDF's own outline when it has one, otherwise headings spotted in the text.
+        let headings: [Heading]
+    }
+
+    struct Heading {
+        let title: String
+        /// Nesting depth (0 = top level); always 0 for headings spotted in the text.
+        let level: Int
+        let wordIndex: Int
+        let pageIndex: Int
     }
 
     enum ExtractionError: LocalizedError {
@@ -55,7 +65,7 @@ enum PDFTextExtractor {
 
         let runningLines = repeatedEdgeLines(in: pageLines.map(\.lines))
         var printedPageNumbers: [Int: String] = [:]
-        var keptLines: [(text: String, page: Int)] = []
+        var keptLines: [(text: String, page: Int, isHeading: Bool)] = []
 
         for (pageIndex, lines) in pageLines {
             for (position, line) in lines.enumerated() {
@@ -72,13 +82,64 @@ enum PDFTextExtractor {
                         continue
                     }
                 }
-                keptLines.append((line, pageIndex))
+                keptLines.append((line, pageIndex, looksLikeHeading(line)))
             }
         }
 
-        let (words, wordPages) = tokenize(keptLines)
+        let (words, wordPages, textHeadings) = tokenize(keptLines)
         guard !words.isEmpty else { throw ExtractionError.noText }
-        return ExtractedText(words: words, wordPageIndices: wordPages, printedPageNumbers: printedPageNumbers)
+
+        let outline = outlineHeadings(in: document, wordPages: wordPages)
+        return ExtractedText(
+            words: words,
+            wordPageIndices: wordPages,
+            printedPageNumbers: printedPageNumbers,
+            headings: outline.isEmpty ? textHeadings : outline
+        )
+    }
+
+    // MARK: - Chapters
+
+    private static let chapterPattern = try! NSRegularExpression(
+        pattern: #"^\s*(глава|часть|раздел|книга|пролог|эпилог|введение|заключение|предисловие|послесловие|chapter|part|book|prologue|epilogue|introduction|conclusion|preface|afterword)\b"#,
+        options: [.caseInsensitive]
+    )
+
+    /// Short lines that start like a chapter title ("Глава 3", "ЧАСТЬ ВТОРАЯ", "Пролог")
+    /// or are set entirely in capitals.
+    private static func looksLikeHeading(_ line: String) -> Bool {
+        let words = line.split(whereSeparator: { $0.isWhitespace })
+        guard !words.isEmpty, words.count <= 10, line.count <= 80 else { return false }
+        if let last = line.last, ",;:".contains(last) { return false }
+
+        if chapterPattern.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)) != nil {
+            return true
+        }
+        let letters = line.filter { $0.isLetter }
+        guard letters.count >= 5 else { return false }
+        return letters.allSatisfy { $0.isUppercase }
+    }
+
+    /// The PDF's own outline (bookmarks panel), mapped onto the first word of each entry's page.
+    private static func outlineHeadings(in document: PDFDocument, wordPages: [Int]) -> [Heading] {
+        guard let root = document.outlineRoot else { return [] }
+        var result: [Heading] = []
+
+        func visit(_ node: PDFOutline, level: Int) {
+            for index in 0..<node.numberOfChildren {
+                guard let child = node.child(at: index) else { continue }
+                let title = (child.label ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                if !title.isEmpty, let page = child.destination?.page {
+                    let pageIndex = document.index(for: page)
+                    if let wordIndex = wordPages.firstIndex(where: { $0 >= pageIndex }) {
+                        result.append(Heading(title: title, level: level, wordIndex: wordIndex, pageIndex: wordPages[wordIndex]))
+                    }
+                }
+                if level < 2 { visit(child, level: level + 1) }
+            }
+        }
+        visit(root, level: 0)
+        return result
     }
 
     // MARK: - Running headers / footers
@@ -151,15 +212,20 @@ enum PDFTextExtractor {
 
     /// Splits lines into words, joining words that were hyphenated across a line break:
     /// "пере-" + "нос" → "перенос", while "Санкт-" + "Петербург" keeps its hyphen.
-    private static func tokenize(_ lines: [(text: String, page: Int)]) -> ([String], [Int]) {
+    private static func tokenize(_ lines: [(text: String, page: Int, isHeading: Bool)]) -> ([String], [Int], [Heading]) {
         var words: [String] = []
         var pages: [Int] = []
+        var headings: [Heading] = []
         var pending: (word: String, page: Int)?
 
-        for (text, page) in lines {
+        for (text, page, isHeading) in lines {
             var tokens = text.split(whereSeparator: { $0.isWhitespace }).map(String.init)
             guard !tokens.isEmpty else { continue }
             var tokenPages = Array(repeating: page, count: tokens.count)
+
+            if isHeading {
+                headings.append(Heading(title: text, level: 0, wordIndex: words.count, pageIndex: page))
+            }
 
             if let carried = pending {
                 var head = carried.word
@@ -185,7 +251,7 @@ enum PDFTextExtractor {
             words.append(carried.word)
             pages.append(carried.page)
         }
-        return (words, pages)
+        return (words, pages, headings)
     }
 
     private static func isHyphenatedBreak(_ token: String) -> Bool {

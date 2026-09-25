@@ -10,6 +10,7 @@ struct ReaderView: View {
     let onAddBookmark: () -> Void
     let onJumpToBookmark: (Bookmark) -> Void
     let onShowBookmarks: () -> Void
+    let onFindPlace: () -> Void
     let onClose: () -> Void
 
     @State private var justSavedQuote = false
@@ -71,6 +72,13 @@ struct ReaderView: View {
 
             HStack(spacing: 4) {
                 Menu {
+                    Button(action: onFindPlace) {
+                        Label(engine.chapters.isEmpty ? "Найти место…" : "Оглавление и поиск…", systemImage: "text.magnifyingglass")
+                    }
+                    .disabled(engine.currentChunk == nil)
+
+                    Divider()
+
                     Button(action: onAddBookmark) {
                         Label("Добавить закладку здесь", systemImage: "bookmark.fill")
                     }
@@ -78,7 +86,7 @@ struct ReaderView: View {
 
                     if !bookmarks.isEmpty {
                         Divider()
-                        ForEach(bookmarks.prefix(8)) { bookmark in
+                        ForEach(bookmarks.prefix(6)) { bookmark in
                             Button {
                                 onJumpToBookmark(bookmark)
                             } label: {
@@ -96,7 +104,7 @@ struct ReaderView: View {
                         Label(bookmarks.isEmpty ? "Все закладки…" : "Все закладки (\(bookmarks.count))…", systemImage: "list.bullet")
                     }
                 } label: {
-                    Image(systemName: bookmarks.isEmpty ? "bookmark" : "bookmark.fill")
+                    Image(systemName: bookmarks.isEmpty ? "list.bullet" : "bookmark.fill")
                         .font(.system(size: 18))
                         .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
@@ -104,7 +112,7 @@ struct ReaderView: View {
                 .plainMenuStyle()
                 .menuIndicator(.hidden)
                 .fixedSize()
-                .accessibilityLabel("Закладки")
+                .accessibilityLabel("Навигация: оглавление, поиск, закладки")
 
                 Button(action: onOpenPDF) {
                     Image(systemName: "doc.text.magnifyingglass")

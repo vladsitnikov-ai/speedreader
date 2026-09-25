@@ -15,6 +15,7 @@ struct ReaderContainerView: View {
     @State private var isShowingPDF = false
     @State private var isShowingBookmarks = false
     @State private var isNamingBookmark = false
+    @State private var isFindingPlace = false
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -43,11 +44,20 @@ struct ReaderContainerView: View {
                     onOpenPDF: openPDF,
                     onAddBookmark: { engine.pause(); isNamingBookmark = true },
                     onJumpToBookmark: { engine.seek(toWordIndex: $0.wordIndex) },
-                    onShowBookmarks: { engine.pause(); isShowingBookmarks = true }
+                    onShowBookmarks: { engine.pause(); isShowingBookmarks = true },
+                    onFindPlace: { engine.pause(); isFindingPlace = true }
                 ) {
                     saveProgress()
                     onClose()
                 }
+            }
+        }
+        .sheet(isPresented: $isFindingPlace) {
+            FindPlaceView(engine: engine) { wordIndex in
+                isFindingPlace = false
+                engine.seek(toWordIndex: wordIndex)
+            } onClose: {
+                isFindingPlace = false
             }
         }
         .sheet(isPresented: $isNamingBookmark) {
@@ -102,7 +112,8 @@ struct ReaderContainerView: View {
             engine.load(
                 words: extracted.words,
                 pageIndices: extracted.wordPageIndices,
-                printedPages: extracted.printedPageNumbers
+                printedPages: extracted.printedPageNumbers,
+                headings: extracted.headings
             )
             if let startWordIndex {
                 engine.seek(toWordIndex: startWordIndex)

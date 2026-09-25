@@ -22,11 +22,13 @@
 		5B0ECE63CEBDA0627C25B83A /* LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60B19307A43BFB83C8FB8346 /* LibraryStore.swift */; };
 		5B38BFF1E09A8CDA720C851C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64675BCFC0FB1E613723E6A2 /* SettingsView.swift */; };
 		638F8442E9D24D756C5050EA /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CD5D67EB73EBBB0A1FBB32 /* ReaderView.swift */; };
+		66D183300706976BE639B681 /* FindPlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF6541A5F114ABD010C0CFC /* FindPlaceView.swift */; };
 		6B5E2BC3AC82F3C6CE4A2F47 /* PlatformClipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8831198DF45091AF3E3488 /* PlatformClipboard.swift */; };
 		70F1DE8651B18B244D188250 /* QuoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8091995464313C9BD7C5643 /* QuoteStore.swift */; };
 		74DE0B12E0B6D9C0F19520EB /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 690B972321F2886EAD737092 /* AppSettings.swift */; };
 		7C4D12DBBD1CF248DEEC891F /* BookInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E2579C7D1F36F6F12887A89 /* BookInfoView.swift */; };
 		8634276D563B8C65C810D203 /* PlatformImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8320114F6F28FC675215D516 /* PlatformImage.swift */; };
+		9586811129FDA5EDF65F11B6 /* FindPlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF6541A5F114ABD010C0CFC /* FindPlaceView.swift */; };
 		9B862CB5CBD355500F60EA43 /* Quote.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9405812A8302CA38A996988 /* Quote.swift */; };
 		A76B8374EAC1EAF10C41E774 /* PageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 642CF1F65412B09F3568C52B /* PageSelectionView.swift */; };
 		A995AE2B0BD091EB228EADB9 /* BookmarksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B51287CDEB533B928423644 /* BookmarksView.swift */; };
@@ -59,6 +61,7 @@
 		1EAA67B9535F222CACB8F27C /* SpeedReader-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "SpeedReader-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		24F6F004E6E228104FC1477B /* RSVPEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSVPEngine.swift; sourceTree = "<group>"; };
 		394A9C4DF12D69EA895EE18A /* SpeedReader-macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SpeedReader-macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3FF6541A5F114ABD010C0CFC /* FindPlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindPlaceView.swift; sourceTree = "<group>"; };
 		4E2579C7D1F36F6F12887A89 /* BookInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookInfoView.swift; sourceTree = "<group>"; };
 		543CCD6E5023D4FF31493A92 /* QuotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuotesView.swift; sourceTree = "<group>"; };
 		5B51287CDEB533B928423644 /* BookmarksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksView.swift; sourceTree = "<group>"; };
@@ -102,6 +105,7 @@
 				70F8BC6F87EA7BEBD29107CB /* Bookmark.swift */,
 				5B51287CDEB533B928423644 /* BookmarksView.swift */,
 				BA5F6D2C41B52E20DD872D2A /* ContentView.swift */,
+				3FF6541A5F114ABD010C0CFC /* FindPlaceView.swift */,
 				60B19307A43BFB83C8FB8346 /* LibraryStore.swift */,
 				D51C7F9B0D3B54CE29B2BC50 /* LibraryView.swift */,
 				B78D1B8ADA1AF0C5316B9E81 /* ORPWordView.swift */,
@@ -239,6 +243,7 @@
 				FA938B3F89E89F3C3363620C /* Bookmark.swift in Sources */,
 				A995AE2B0BD091EB228EADB9 /* BookmarksView.swift in Sources */,
 				042ECE88D66628F70A3DDAD9 /* ContentView.swift in Sources */,
+				66D183300706976BE639B681 /* FindPlaceView.swift in Sources */,
 				5B0ECE63CEBDA0627C25B83A /* LibraryStore.swift in Sources */,
 				DB8E07ACD1D85F1D7DEB8DAA /* LibraryView.swift in Sources */,
 				ED90FD12B2E1E43008180538 /* ORPWordView.swift in Sources */,
@@ -268,6 +273,7 @@
 				17078CA4031C343287FA8853 /* Bookmark.swift in Sources */,
 				ABEBC4A9E9539E6DB0906D66 /* BookmarksView.swift in Sources */,
 				CEB9D99B67CA8FA0104CEBAA /* ContentView.swift in Sources */,
+				9586811129FDA5EDF65F11B6 /* FindPlaceView.swift in Sources */,
 				147168BAB7375A861C076050 /* LibraryStore.swift in Sources */,
 				D8000740617D32F1F746F5AD /* LibraryView.swift in Sources */,
 				B80ED0F26A9110DDB12E596F /* ORPWordView.swift in Sources */,
