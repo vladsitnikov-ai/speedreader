@@ -24,6 +24,10 @@ final class RSVPEngine: ObservableObject {
     }
 
     private var rawWords: [String] = []
+    /// PDF page index for each word in `rawWords` (empty when the source has no page info).
+    private var wordPages: [Int] = []
+    /// PDF page index → page number as printed on the page.
+    private var printedPages: [Int: String] = [:]
     private var workItem: DispatchWorkItem?
 
     var progress: Double {
@@ -39,9 +43,28 @@ final class RSVPEngine: ObservableObject {
     var totalWordCount: Int { rawWords.count }
     var isFinished: Bool { !chunks.isEmpty && currentIndex >= chunks.count - 1 }
 
-    func load(words: [String]) {
+    /// 0-based PDF page index of the word currently on screen.
+    var currentPageIndex: Int? {
+        guard let chunk = currentChunk, wordPages.indices.contains(chunk.startWordIndex) else { return nil }
+        return wordPages[chunk.startWordIndex]
+    }
+
+    /// Page number as printed on the current page, if it was detected.
+    var currentPrintedPage: String? {
+        currentPageIndex.flatMap { printedPages[$0] }
+    }
+
+    /// Printed page number when known, otherwise the 1-based PDF page — for the progress label.
+    var currentPageLabel: String? {
+        guard let index = currentPageIndex else { return nil }
+        return printedPages[index] ?? "\(index + 1)"
+    }
+
+    func load(words: [String], pageIndices: [Int] = [], printedPages: [Int: String] = [:]) {
         pause()
         rawWords = words
+        wordPages = pageIndices.count == words.count ? pageIndices : []
+        self.printedPages = printedPages
         currentIndex = 0
         rebuildChunks()
     }

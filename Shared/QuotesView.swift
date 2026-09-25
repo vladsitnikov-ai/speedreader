@@ -2,6 +2,8 @@ import SwiftUI
 
 struct QuotesView: View {
     @ObservedObject var quotes: QuoteStore
+    @ObservedObject var library: LibraryStore
+
     @State private var copiedID: UUID?
 
     private static let dateFormatter: DateFormatter = {
@@ -10,6 +12,34 @@ struct QuotesView: View {
         f.timeStyle = .short
         return f
     }()
+
+    /// Quotes grouped by book, newest book first.
+    private struct QuoteGroup: Identifiable {
+        let id: UUID
+        let book: Book?
+        let fallbackTitle: String
+        let quotes: [Quote]
+
+        var citation: String { book?.citation ?? fallbackTitle }
+    }
+
+    private var groups: [QuoteGroup] {
+        var order: [UUID] = []
+        var byBook: [UUID: [Quote]] = [:]
+        for quote in quotes.quotes {
+            if byBook[quote.bookID] == nil { order.append(quote.bookID) }
+            byBook[quote.bookID, default: []].append(quote)
+        }
+        return order.map { id in
+            let items = byBook[id] ?? []
+            return QuoteGroup(
+                id: id,
+                book: library.books.first { $0.id == id },
+                fallbackTitle: items.first?.bookTitle ?? "",
+                quotes: items
+            )
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -20,10 +50,15 @@ struct QuotesView: View {
                 emptyState
             } else {
                 List {
-                    ForEach(quotes.quotes) { quote in
-                        row(for: quote)
+                    ForEach(groups) { group in
+                        Section {
+                            ForEach(group.quotes) { quote in
+                                row(for: quote, in: group)
+                            }
+                        } header: {
+                            sectionHeader(for: group)
+                        }
                     }
-                    .onDelete(perform: quotes.delete)
                 }
                 .listStyle(.plain)
             }
@@ -47,7 +82,7 @@ struct QuotesView: View {
                 .foregroundStyle(.secondary)
             Text("Пока пусто")
                 .font(.title2.bold())
-            Text("Во время чтения нажмите на значок цитаты, чтобы сохранить текущее предложение сюда.")
+            Text("Во время чтения нажмите на значок цитаты — предложение сохранится сюда вместе с книгой и номером страницы.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -56,23 +91,43 @@ struct QuotesView: View {
         }
     }
 
-    private func row(for quote: Quote) -> some View {
+    private func sectionHeader(for group: QuoteGroup) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(group.citation)
+                .font(.headline)
+                .textCase(nil)
+            Spacer()
+            Button {
+                copy(group.quotes.map { $0.formatted(book: group.book) }.joined(separator: "\n\n"), id: group.id)
+            } label: {
+                Label(copiedID == group.id ? "Скопировано" : "Копировать все", systemImage: copiedID == group.id ? "checkmark" : "doc.on.doc")
+                    .font(.caption)
+                    .textCase(nil)
+            }
+            .buttonStyle(.borderless)
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func row(for quote: Quote, in group: QuoteGroup) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(quote.text)
                 .font(.body)
 
             HStack {
-                Text("\(quote.bookTitle) · \(Self.dateFormatter.string(from: quote.dateAdded))")
+                if let page = quote.pageLabel {
+                    Text("стр. \(page)")
+                        .font(.caption.weight(.medium))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color.accentColor.opacity(0.12), in: Capsule())
+                }
+                Text(Self.dateFormatter.string(from: quote.dateAdded))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()
                 Button {
-                    copyToClipboard(quote.text)
-                    copiedID = quote.id
-                    Task {
-                        try? await Task.sleep(nanoseconds: 1_200_000_000)
-                        if copiedID == quote.id { copiedID = nil }
-                    }
+                    copy(quote.formatted(book: group.book), id: quote.id)
                 } label: {
                     Label(copiedID == quote.id ? "Скопировано" : "Копировать", systemImage: copiedID == quote.id ? "checkmark" : "doc.on.doc")
                         .font(.caption)
@@ -87,6 +142,15 @@ struct QuotesView: View {
             } label: {
                 Label("Удалить", systemImage: "trash")
             }
+        }
+    }
+
+    private func copy(_ text: String, id: UUID) {
+        copyToClipboard(text)
+        copiedID = id
+        Task {
+            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            if copiedID == id { copiedID = nil }
         }
     }
 }

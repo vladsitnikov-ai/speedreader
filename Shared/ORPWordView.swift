@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// Shows a single word with its Optimal Recognition Point (ORP) letter
-/// centered and highlighted, so the reader's eyes never need to move —
-/// classic RSVP / Spritz-style layout.
+/// Shows a single word. With `highlightPivot` on, the Optimal Recognition Point (ORP)
+/// letter is centered and highlighted with fixation ticks — classic RSVP / Spritz-style
+/// layout. Off (the default), the word is simply centered.
 struct ORPWordView: View {
     let word: String
+    var highlightPivot: Bool = false
     var fontSize: CGFloat = 56
 
     private var pivotIndex: Int {
@@ -34,7 +35,25 @@ struct ORPWordView: View {
         return String(word[idx...])
     }
 
+    private var wordFont: Font {
+        .system(size: fontSize, weight: .semibold, design: .monospaced)
+    }
+
     var body: some View {
+        Group {
+            if highlightPivot {
+                pivotLayout
+            } else {
+                Text(word)
+                    .font(wordFont)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.3)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+    }
+
+    private var pivotLayout: some View {
         VStack(spacing: 6) {
             tick
             HStack(spacing: 0) {
@@ -46,7 +65,7 @@ struct ORPWordView: View {
                 Text(suffix)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .font(.system(size: fontSize, weight: .semibold, design: .monospaced))
+            .font(wordFont)
             .lineLimit(1)
             .minimumScaleFactor(0.3)
             tick
@@ -61,6 +80,9 @@ struct ORPWordView: View {
 }
 
 #Preview {
-    ORPWordView(word: "Читалка")
-        .padding()
+    VStack(spacing: 40) {
+        ORPWordView(word: "Читалка")
+        ORPWordView(word: "Читалка", highlightPivot: true)
+    }
+    .padding()
 }

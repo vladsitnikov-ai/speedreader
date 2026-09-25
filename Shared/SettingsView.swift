@@ -19,6 +19,14 @@ struct SettingsView: View {
                     .pickerStyle(.segmented)
                 }
 
+                Section {
+                    Toggle("Подсвечивать букву фиксации", isOn: $settings.highlightPivot)
+                } header: {
+                    Text("Чтение")
+                } footer: {
+                    Text("Выделяет цветом букву в слове, на которой удобнее всего фиксировать взгляд (ORP), и показывает метки над и под ней. По умолчанию выключено — слово просто показывается по центру.")
+                }
+
                 Section("О приложении") {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("SpeedReader")

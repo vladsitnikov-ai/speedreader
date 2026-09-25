@@ -54,10 +54,13 @@ final class LibraryStore: ObservableObject {
         let title = (document.documentAttributes?[PDFDocumentAttribute.titleAttribute] as? String)
             .flatMap { $0.trimmingCharacters(in: .whitespaces).isEmpty ? nil : $0 }
             ?? sourceURL.deletingPathExtension().lastPathComponent
+        let author = (document.documentAttributes?[PDFDocumentAttribute.authorAttribute] as? String)?
+            .trimmingCharacters(in: .whitespaces) ?? ""
 
         let book = Book(
             id: id,
             title: title,
+            author: author,
             pageCount: document.pageCount,
             selectedPages: [],
             dateAdded: Date(),
@@ -82,6 +85,16 @@ final class LibraryStore: ObservableObject {
         books[idx].selectedPages = pages.sorted()
         books[idx].bookmarkChunkIndex = 0
         books[idx].totalChunks = 0
+        persist()
+    }
+
+    func updateInfo(title: String, author: String, publisher: String, year: String, for bookID: UUID) {
+        guard let idx = books.firstIndex(where: { $0.id == bookID }) else { return }
+        let trimmedTitle = title.trimmingCharacters(in: .whitespaces)
+        if !trimmedTitle.isEmpty { books[idx].title = trimmedTitle }
+        books[idx].author = author.trimmingCharacters(in: .whitespaces)
+        books[idx].publisher = publisher.trimmingCharacters(in: .whitespaces)
+        books[idx].year = year.trimmingCharacters(in: .whitespaces)
         persist()
     }
 

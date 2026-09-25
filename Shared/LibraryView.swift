@@ -9,6 +9,7 @@ struct LibraryView: View {
     @State private var isImporting = false
     @State private var errorMessage: String?
     @State private var bookPendingDelete: Book?
+    @State private var bookForInfo: Book?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -46,6 +47,14 @@ struct LibraryView: View {
                 bookPendingDelete = nil
             }
             Button("Отмена", role: .cancel) { bookPendingDelete = nil }
+        }
+        .sheet(item: $bookForInfo) { book in
+            BookInfoView(book: book) { title, author, publisher, year in
+                library.updateInfo(title: title, author: author, publisher: publisher, year: year, for: book.id)
+                bookForInfo = nil
+            } onCancel: {
+                bookForInfo = nil
+            }
         }
     }
 
@@ -96,6 +105,17 @@ struct LibraryView: View {
                         .contentShape(Rectangle())
                         .onTapGesture { onOpen(book) }
                         .contextMenu {
+                            Button {
+                                bookForInfo = book
+                            } label: {
+                                Label("Сведения об издании…", systemImage: "info.circle")
+                            }
+                            Button {
+                                onOpen(book)
+                            } label: {
+                                Label("Читать", systemImage: "book")
+                            }
+                            Divider()
                             Button(role: .destructive) {
                                 bookPendingDelete = book
                             } label: {
@@ -147,6 +167,13 @@ private struct BookCell: View {
             Text(book.title)
                 .font(.subheadline.weight(.medium))
                 .lineLimit(2)
+
+            if !book.author.isEmpty {
+                Text(book.author)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
 
             if !book.isConfigured {
                 Label("Выберите страницы", systemImage: "checklist")

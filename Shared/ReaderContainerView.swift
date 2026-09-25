@@ -46,8 +46,12 @@ struct ReaderContainerView: View {
         do {
             let url = library.pdfURL(for: book)
             let pages = book.selectedPages.isEmpty ? Array(0..<book.pageCount) : book.selectedPages
-            let words = try PDFTextExtractor.extractWords(from: url, pages: pages)
-            engine.load(words: words)
+            let extracted = try PDFTextExtractor.extract(from: url, pages: pages)
+            engine.load(
+                words: extracted.words,
+                pageIndices: extracted.wordPageIndices,
+                printedPages: extracted.printedPageNumbers
+            )
             engine.restore(currentIndex: book.bookmarkChunkIndex)
             isLoading = false
         } catch {
@@ -64,7 +68,13 @@ struct ReaderContainerView: View {
     @discardableResult
     private func saveCurrentQuote() -> Bool {
         guard let sentence = engine.currentSentence() else { return false }
-        quotes.add(text: sentence, bookID: book.id, bookTitle: book.title)
+        quotes.add(
+            text: sentence,
+            bookID: book.id,
+            bookTitle: book.title,
+            pdfPage: engine.currentPageIndex.map { $0 + 1 },
+            printedPage: engine.currentPrintedPage
+        )
         return true
     }
 }

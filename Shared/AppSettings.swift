@@ -26,4 +26,6 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
 final class AppSettings: ObservableObject {
     @AppStorage("appTheme") var theme: AppTheme = .system
+    /// Highlight the optimal-recognition-point letter and show the fixation ticks. Off by default.
+    @AppStorage("highlightPivot") var highlightPivot: Bool = false
 }

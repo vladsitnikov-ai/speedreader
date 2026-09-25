@@ -2,11 +2,15 @@ import SwiftUI
 
 struct ReaderView: View {
     @ObservedObject var engine: RSVPEngine
+    @EnvironmentObject private var settings: AppSettings
     let documentTitle: String
     let onSaveQuote: () -> Bool
     let onClose: () -> Void
 
     @State private var justSavedQuote = false
+
+    private static let speedStep: Double = 25
+    private static let speedRange: ClosedRange<Double> = 100...900
 
     var body: some View {
         VStack(spacing: 20) {
@@ -32,7 +36,7 @@ struct ReaderView: View {
     @ViewBuilder
     private var displayArea: some View {
         if let chunk = engine.currentChunk {
-            ORPWordView(word: chunk.text)
+            ORPWordView(word: chunk.text, highlightPivot: settings.highlightPivot)
         } else {
             VStack(spacing: 8) {
                 Image(systemName: "checkmark.circle")
@@ -92,6 +96,9 @@ struct ReaderView: View {
             )
             HStack {
                 Text("\(min(engine.currentIndex + 1, engine.chunks.count)) / \(max(engine.chunks.count, 1))")
+                if let page = engine.currentPageLabel {
+                    Text("· стр. \(page)")
+                }
                 Spacer()
                 Text("\(Int(engine.wordsPerMinute)) слов/мин")
             }
@@ -106,16 +113,21 @@ struct ReaderView: View {
             Button(action: engine.restart) {
                 Image(systemName: "backward.end.fill")
             }
+            .accessibilityLabel("В начало")
             Button(action: engine.stepBackward) {
                 Image(systemName: "backward.frame.fill")
             }
+            .accessibilityLabel("Предыдущее слово")
             Button(action: engine.togglePlay) {
                 Image(systemName: engine.isPlaying ? "pause.circle.fill" : "play.circle.fill")
                     .font(.system(size: 52))
             }
+            .keyboardShortcut(.space, modifiers: [])
+            .accessibilityLabel(engine.isPlaying ? "Пауза" : "Читать")
             Button(action: engine.stepForward) {
                 Image(systemName: "forward.frame.fill")
             }
+            .accessibilityLabel("Следующее слово")
         }
         .font(.system(size: 22))
         .buttonStyle(.plain)
@@ -124,11 +136,23 @@ struct ReaderView: View {
     private var speedControls: some View {
         VStack(spacing: 10) {
             HStack {
-                Image(systemName: "tortoise.fill")
-                    .foregroundStyle(.secondary)
-                Slider(value: $engine.wordsPerMinute, in: 100...900, step: 10)
-                Image(systemName: "hare.fill")
-                    .foregroundStyle(.secondary)
+                Button { adjustSpeed(by: -Self.speedStep) } label: {
+                    Image(systemName: "tortoise.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut(.leftArrow, modifiers: [])
+                .accessibilityLabel("Медленнее")
+
+                Slider(value: $engine.wordsPerMinute, in: Self.speedRange, step: 10)
+
+                Button { adjustSpeed(by: Self.speedStep) } label: {
+                    Image(systemName: "hare.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut(.rightArrow, modifiers: [])
+                .accessibilityLabel("Быстрее")
             }
             Stepper(
                 "Слов за раз: \(engine.wordsPerChunk)",
@@ -136,5 +160,10 @@ struct ReaderView: View {
                 in: 1...4
             )
         }
+    }
+
+    private func adjustSpeed(by delta: Double) {
+        let target = engine.wordsPerMinute + delta
+        engine.wordsPerMinute = min(Self.speedRange.upperBound, max(Self.speedRange.lowerBound, target))
     }
 }

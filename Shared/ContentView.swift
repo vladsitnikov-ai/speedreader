@@ -17,9 +17,10 @@ struct ContentView: View {
             LibraryFlow(library: library, quotes: quotes, onOpenSettings: { isSettingsPresented = true })
                 .tabItem { Label("Библиотека", systemImage: "books.vertical") }
 
-            QuotesView(quotes: quotes)
+            QuotesView(quotes: quotes, library: library)
                 .tabItem { Label("Цитатник", systemImage: "quote.bubble") }
         }
+        .environmentObject(settings)
         .preferredColorScheme(settings.theme.colorScheme)
         .sheet(isPresented: $isSettingsPresented) {
             SettingsView(settings: settings) { isSettingsPresented = false }

@@ -16,8 +16,16 @@ final class QuoteStore: ObservableObject {
     }
 
     @discardableResult
-    func add(text: String, bookID: UUID, bookTitle: String) -> Quote {
-        let quote = Quote(id: UUID(), bookID: bookID, bookTitle: bookTitle, text: text, dateAdded: Date())
+    func add(text: String, bookID: UUID, bookTitle: String, pdfPage: Int?, printedPage: String?) -> Quote {
+        let quote = Quote(
+            id: UUID(),
+            bookID: bookID,
+            bookTitle: bookTitle,
+            text: text,
+            dateAdded: Date(),
+            pdfPage: pdfPage,
+            printedPage: printedPage
+        )
         quotes.insert(quote, at: 0)
         persist()
         return quote
@@ -25,11 +33,6 @@ final class QuoteStore: ObservableObject {
 
     func delete(_ quote: Quote) {
         quotes.removeAll { $0.id == quote.id }
-        persist()
-    }
-
-    func delete(at offsets: IndexSet) {
-        quotes.remove(atOffsets: offsets)
         persist()
     }
 
