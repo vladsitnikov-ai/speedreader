@@ -281,10 +281,25 @@ func finalize(platform: String, versionString: String) throws {
                         "sexualContentGraphicAndNudity", "sexualContentOrNudity", "violenceCartoonOrFantasy",
                         "violenceRealistic", "violenceRealisticProlongedGraphicOrSadistic"]
             var attributes: [String: Any] = Dictionary(uniqueKeysWithValues: none.map { ($0, "NONE") })
-            attributes["gambling"] = false
-            attributes["unrestrictedWebAccess"] = false
+            attributes["gunsOrOtherWeapons"] = "NONE"
+            for flag in ["gambling", "unrestrictedWebAccess", "advertising", "healthOrWellnessTopics", "lootBox",
+                         "messagingAndChat", "parentalControls", "userGeneratedContent"] {
+                attributes[flag] = false
+            }
             attributes["kidsAgeBand"] = NSNull()
-            try request("PATCH", "/v1/ageRatingDeclarations/\(declarationID)", json: ["data": ["type": "ageRatingDeclarations", "id": declarationID, "attributes": attributes]])
+            // The API has changed the type of `ageAssurance` between releases; try the likely encodings in turn.
+            var lastError: Error?
+            for ageAssurance in [false as Any, "NONE" as Any, "NOT_REQUIRED" as Any] {
+                attributes["ageAssurance"] = ageAssurance
+                do {
+                    try request("PATCH", "/v1/ageRatingDeclarations/\(declarationID)", json: ["data": ["type": "ageRatingDeclarations", "id": declarationID, "attributes": attributes]])
+                    lastError = nil
+                    break
+                } catch let error as APIError where error.body.contains("ageAssurance") {
+                    lastError = error
+                }
+            }
+            if let lastError { throw lastError }
             print("AGE RATING set (4+)")
         }
     }
