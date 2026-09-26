@@ -178,6 +178,7 @@ struct ReaderView: View {
             Button(action: engine.stepBackward) {
                 Image(systemName: "backward.frame.fill")
             }
+            .keyboardShortcut(.leftArrow, modifiers: [])
             .accessibilityLabel("Предыдущее слово")
             Button(action: engine.togglePlay) {
                 Image(systemName: engine.isPlaying ? "pause.circle.fill" : "play.circle.fill")
@@ -188,6 +189,7 @@ struct ReaderView: View {
             Button(action: engine.stepForward) {
                 Image(systemName: "forward.frame.fill")
             }
+            .keyboardShortcut(.rightArrow, modifiers: [])
             .accessibilityLabel("Следующее слово")
         }
         .font(.system(size: 22))
@@ -202,7 +204,7 @@ struct ReaderView: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
-                .keyboardShortcut(.leftArrow, modifiers: [])
+                .keyboardShortcut(.downArrow, modifiers: [])
                 .accessibilityLabel("Медленнее")
 
                 Slider(value: $engine.wordsPerMinute, in: Self.speedRange, step: 10)
@@ -212,7 +214,7 @@ struct ReaderView: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
-                .keyboardShortcut(.rightArrow, modifiers: [])
+                .keyboardShortcut(.upArrow, modifiers: [])
                 .accessibilityLabel("Быстрее")
             }
             Stepper(

@@ -81,6 +81,11 @@ private struct LibraryFlow: View {
                     } onCancel: {
                         screen = .library
                     }
+                    // Forces a brand-new view (and fresh @State) per book: SwiftUI otherwise
+                    // treats two consecutive `.pageSelection` renders as the same view identity
+                    // whenever the enclosing switch stays on this case, even for a different id,
+                    // and would keep showing the previous book's already-loaded PDF/thumbnails.
+                    .id(id)
                 } else {
                     Color.clear.onAppear { screen = .library }
                 }
@@ -96,6 +101,8 @@ private struct LibraryFlow: View {
                     ) {
                         screen = .library
                     }
+                    // Same reasoning as above: guarantees a fresh engine/state per book.
+                    .id(id)
                 } else {
                     Color.clear.onAppear { screen = .library }
                 }

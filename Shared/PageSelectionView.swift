@@ -8,6 +8,7 @@ struct PageSelectionView: View {
     let onCancel: () -> Void
 
     @State private var document: PDFDocument?
+    @State private var loadFailed = false
     @State private var selected: Set<Int> = []
     @State private var rangeStart: String = "1"
     @State private var rangeEnd: String = ""
@@ -34,6 +35,15 @@ struct PageSelectionView: View {
                     }
                     .padding()
                 }
+            } else if loadFailed {
+                Spacer()
+                VStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 32))
+                    Text("Не удалось открыть PDF этой книги.")
+                }
+                .foregroundStyle(.secondary)
+                Spacer()
             } else {
                 Spacer()
                 ProgressView("Открываю PDF…")
@@ -53,6 +63,8 @@ struct PageSelectionView: View {
                     } else {
                         selected = Set(book.selectedPages)
                     }
+                } else {
+                    loadFailed = true
                 }
             }
         }

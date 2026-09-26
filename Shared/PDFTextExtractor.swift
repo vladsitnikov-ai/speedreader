@@ -66,6 +66,9 @@ enum PDFTextExtractor {
         let runningLines = repeatedEdgeLines(in: pageLines.map(\.lines))
         var printedPageNumbers: [Int: String] = [:]
         var keptLines: [(text: String, page: Int, isHeading: Bool)] = []
+        // A chapter/part title that runs in the header on every page of that chapter is kept
+        // once (so it still becomes a real chapter marker) and stripped on every later repeat.
+        var seenAsHeadingOnce: Set<String> = []
 
         for (pageIndex, lines) in pageLines {
             for (position, line) in lines.enumerated() {
@@ -75,11 +78,21 @@ enum PDFTextExtractor {
                         if printedPageNumbers[pageIndex] == nil { printedPageNumbers[pageIndex] = number }
                         continue
                     }
-                    if runningLines.contains(normalize(line)) {
+                    let key = normalize(line)
+                    if runningLines.alwaysStrip.contains(key) {
                         if printedPageNumbers[pageIndex] == nil, let number = embeddedPageNumber(in: line) {
                             printedPageNumbers[pageIndex] = number
                         }
                         continue
+                    }
+                    if runningLines.keepFirstAsHeading.contains(key) {
+                        if seenAsHeadingOnce.contains(key) {
+                            if printedPageNumbers[pageIndex] == nil, let number = embeddedPageNumber(in: line) {
+                                printedPageNumbers[pageIndex] = number
+                            }
+                            continue
+                        }
+                        seenAsHeadingOnce.insert(key)
                     }
                 }
                 keptLines.append((line, pageIndex, looksLikeHeading(line)))
@@ -149,12 +162,26 @@ enum PDFTextExtractor {
     /// Running headers are short; anything longer than this is treated as body text.
     private static let maxRunningLineLength = 60
 
-    /// Normalized edge lines that show up on enough pages to be running headers or footers
-    /// (book title, chapter name, author) rather than body text.
-    private static func repeatedEdgeLines(in pages: [[String]]) -> Set<String> {
-        guard pages.count >= 3 else { return [] }
+    private struct RunningLines {
+        /// Constant across the whole book (author name, book title) — stripped every time.
+        let alwaysStrip: Set<String>
+        /// A chapter/part/book title that recurs in the header or footer of consecutive pages
+        /// but changes between sections (so it never reaches a book-wide frequency) — the first
+        /// occurrence is kept as the chapter's own heading, every later repeat is stripped.
+        let keepFirstAsHeading: Set<String>
+    }
+
+    /// A short line recurring in even just 2 pages is repeated for a reason: running headers
+    /// and footers never do that by chance, unlike a coincidentally short piece of body text.
+    private static let minRepeatCount = 2
+
+    /// Normalized edge lines that show up often enough to be running headers or footers
+    /// (book title, chapter name, part name, author) rather than body text.
+    private static func repeatedEdgeLines(in pages: [[String]]) -> RunningLines {
+        guard pages.count >= 2 else { return RunningLines(alwaysStrip: [], keepFirstAsHeading: []) }
 
         var frequency: [String: Int] = [:]
+        var isHeadingLike: [String: Bool] = [:]
         for lines in pages {
             var seenOnThisPage = Set<String>()
             for (position, line) in lines.enumerated()
@@ -163,11 +190,26 @@ enum PDFTextExtractor {
                 guard key.count >= 2, key.count <= maxRunningLineLength,
                       seenOnThisPage.insert(key).inserted else { continue }
                 frequency[key, default: 0] += 1
+                if isHeadingLike[key] == nil { isHeadingLike[key] = looksLikeHeading(line) }
             }
         }
 
-        let threshold = max(3, Int((Double(pages.count) * 0.25).rounded(.up)))
-        return Set(frequency.filter { $0.value >= threshold }.keys)
+        // Constant headers/footers (author, book title) — needs a real majority of the book,
+        // since a short line of body text could plausibly repeat once or twice by coincidence.
+        let globalThreshold = max(3, Int((Double(pages.count) * 0.25).rounded(.up)))
+
+        var alwaysStrip: Set<String> = []
+        var keepFirstAsHeading: Set<String> = []
+        for (key, count) in frequency {
+            if count >= globalThreshold {
+                alwaysStrip.insert(key)
+            } else if count >= minRepeatCount, isHeadingLike[key] == true {
+                // A chapter/part-like line (matches "Глава…"/"Part…" or is set in capitals)
+                // repeating verbatim is a running header for that section, not a coincidence.
+                keepFirstAsHeading.insert(key)
+            }
+        }
+        return RunningLines(alwaysStrip: alwaysStrip, keepFirstAsHeading: keepFirstAsHeading)
     }
 
     /// Lowercased letters only, whitespace collapsed — so "ГЛАВА 2 · 15" and "Глава 2 · 16" compare equal.
