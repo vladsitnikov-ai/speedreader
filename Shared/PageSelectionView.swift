@@ -40,13 +40,13 @@ struct PageSelectionView: View {
                 VStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 32))
-                    Text("Не удалось открыть PDF этой книги.")
+                    Text("Couldn’t open this book’s PDF.")
                 }
                 .foregroundStyle(.secondary)
                 Spacer()
             } else {
                 Spacer()
-                ProgressView("Открываю PDF…")
+                ProgressView("Opening PDF…")
                 Spacer()
             }
 
@@ -76,14 +76,14 @@ struct PageSelectionView: View {
     private var header: some View {
         HStack {
             Button(action: onCancel) {
-                Label("Библиотека", systemImage: "chevron.left")
+                Label("Library", systemImage: "chevron.left")
             }
             .buttonStyle(.plain)
             Spacer()
             VStack(spacing: 2) {
-                Text("Выберите страницы")
+                Text("Choose pages")
                     .font(.headline)
-                Text("Отметьте текст, который хотите читать — без оглавлений и техстраниц")
+                Text("Mark the text you want to read — skip the table of contents and technical pages")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -96,28 +96,28 @@ struct PageSelectionView: View {
 
     private var rangeBar: some View {
         HStack(spacing: 10) {
-            Text("С")
+            Text("From")
             TextField("1", text: $rangeStart)
                 .frame(width: 56)
                 #if os(iOS)
                 .keyboardType(.numberPad)
                 #endif
                 .textFieldStyle(.roundedBorder)
-            Text("по")
+            Text("to")
             TextField("", text: $rangeEnd)
                 .frame(width: 56)
                 #if os(iOS)
                 .keyboardType(.numberPad)
                 #endif
                 .textFieldStyle(.roundedBorder)
-            Button("Применить") { applyRange() }
+            Button("Apply") { applyRange() }
                 .buttonStyle(.bordered)
 
             Spacer()
 
-            Button("Все") { if let c = document?.pageCount { selected = Set(0..<c) } }
+            Button("All") { if let c = document?.pageCount { selected = Set(0..<c) } }
                 .buttonStyle(.borderless)
-            Button("Никакие") { selected.removeAll() }
+            Button("None") { selected.removeAll() }
                 .buttonStyle(.borderless)
         }
         .padding(.horizontal)
@@ -126,11 +126,11 @@ struct PageSelectionView: View {
 
     private var footer: some View {
         HStack {
-            Text("\(selected.count) из \(document?.pageCount ?? book.pageCount) страниц выбрано")
+            Text(String(format: NSLocalizedString("%d of %d pages selected", comment: "page selection footer"), selected.count, document?.pageCount ?? book.pageCount))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             Spacer()
-            Button("Начать чтение") {
+            Button("Start reading") {
                 onConfirm(selected.sorted())
             }
             .buttonStyle(.borderedProminent)

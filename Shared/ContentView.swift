@@ -20,11 +20,11 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             LibraryFlow(library: library, quotes: quotes, bookmarks: bookmarks, onOpenSettings: { isSettingsPresented = true })
-                .tabItem { Label("Библиотека", systemImage: "books.vertical") }
+                .tabItem { Label("Library", systemImage: "books.vertical") }
                 .tag(Tab.library)
 
             QuotesView(quotes: quotes, library: library)
-                .tabItem { Label("Цитатник", systemImage: "quote.bubble") }
+                .tabItem { Label("Quotes", systemImage: "quote.bubble") }
                 .tag(Tab.quotes)
         }
         .environmentObject(settings)

@@ -22,7 +22,7 @@ struct BookmarksView: View {
         VStack(spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Закладки")
+                    Text("Bookmarks")
                         .font(.headline)
                     Text(bookTitle)
                         .font(.caption)
@@ -30,7 +30,7 @@ struct BookmarksView: View {
                         .lineLimit(1)
                 }
                 Spacer()
-                Button("Закрыть", action: onClose)
+                Button("Close", action: onClose)
                     .keyboardShortcut(.cancelAction)
             }
             .padding()
@@ -42,9 +42,9 @@ struct BookmarksView: View {
                     Image(systemName: "bookmark")
                         .font(.system(size: 48))
                         .foregroundStyle(.secondary)
-                    Text("Закладок пока нет")
+                    Text("No bookmarks yet")
                         .font(.title3.bold())
-                    Text("В читалке нажмите на значок закладки → «Добавить закладку здесь».")
+                    Text("In the reader, tap the bookmark icon → “Add bookmark here”.")
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -68,7 +68,7 @@ struct BookmarksView: View {
                                 }
                                 Spacer()
                                 if let page = bookmark.pageLabel {
-                                    Text("стр. \(page)")
+                                    Text(String(format: NSLocalizedString("p. %@", comment: "page label"), page))
                                         .font(.caption.weight(.medium))
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 3)
@@ -82,19 +82,19 @@ struct BookmarksView: View {
                             Button {
                                 bookmarkToRename = bookmark
                             } label: {
-                                Label("Переименовать", systemImage: "pencil")
+                                Label("Rename", systemImage: "pencil")
                             }
                             Button(role: .destructive) {
                                 onDelete(bookmark)
                             } label: {
-                                Label("Удалить", systemImage: "trash")
+                                Label("Delete", systemImage: "trash")
                             }
                         }
                         .swipeActions {
                             Button(role: .destructive) {
                                 onDelete(bookmark)
                             } label: {
-                                Label("Удалить", systemImage: "trash")
+                                Label("Delete", systemImage: "trash")
                             }
                         }
                     }
@@ -103,7 +103,7 @@ struct BookmarksView: View {
             }
         }
         .sheet(item: $bookmarkToRename) { bookmark in
-            BookmarkNameView(title: "Переименовать закладку", defaultName: bookmark.title, pageLabel: bookmark.pageLabel) { name in
+            BookmarkNameView(title: "Rename bookmark", defaultName: bookmark.title, pageLabel: bookmark.pageLabel) { name in
                 onRename(bookmark, name)
                 bookmarkToRename = nil
             } onCancel: {
@@ -139,13 +139,13 @@ struct BookmarkNameView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Button("Отмена", action: onCancel)
+                Button("Cancel", action: onCancel)
                     .keyboardShortcut(.cancelAction)
                 Spacer()
                 Text(title)
                     .font(.headline)
                 Spacer()
-                Button("Сохранить") { onSave(trimmedName) }
+                Button("Save") { onSave(trimmedName) }
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
                     .disabled(trimmedName.isEmpty)
@@ -155,11 +155,11 @@ struct BookmarkNameView: View {
 
             Form {
                 Section {
-                    TextField("Название закладки", text: $name)
+                    TextField("Bookmark name", text: $name)
                         .focused($isNameFocused)
                 } footer: {
                     if let pageLabel {
-                        Text("Страница \(pageLabel). Закладка вернёт вас точно к этому слову.")
+                        Text(String(format: NSLocalizedString("Page %@. The bookmark will bring you back to this exact word.", comment: "bookmark footer"), pageLabel))
                     }
                 }
             }

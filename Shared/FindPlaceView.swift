@@ -18,10 +18,10 @@ struct FindPlaceView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Найти место")
+                Text("Find place")
                     .font(.headline)
                 Spacer()
-                Button("Закрыть", action: onClose)
+                Button("Close", action: onClose)
                     .keyboardShortcut(.cancelAction)
             }
             .padding()
@@ -50,7 +50,7 @@ struct FindPlaceView: View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
-            TextField("Слово или фраза", text: $query)
+            TextField("Word or phrase", text: $query)
                 .textFieldStyle(.plain)
                 .focused($isSearchFocused)
                 .autocorrectionDisabled()
@@ -65,7 +65,7 @@ struct FindPlaceView: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Очистить")
+                .accessibilityLabel("Clear")
             }
         }
         .padding(10)
@@ -77,8 +77,8 @@ struct FindPlaceView: View {
         if engine.chapters.isEmpty {
             hint(
                 icon: "list.bullet.indent",
-                title: "Оглавления нет",
-                text: "В этом PDF нет встроенного оглавления, а заголовки глав в тексте не распознались. Введите слово или фразу, чтобы найти нужное место."
+                title: "No table of contents",
+                text: "This PDF has no built-in table of contents, and chapter headings weren't detected in the text. Type a word or phrase to find your place."
             )
         } else {
             List {
@@ -100,7 +100,7 @@ struct FindPlaceView: View {
                         .buttonStyle(.plain)
                     }
                 } header: {
-                    Text("Оглавление")
+                    Text("Table of Contents")
                 }
             }
             .listStyle(.plain)
@@ -110,7 +110,7 @@ struct FindPlaceView: View {
     @ViewBuilder
     private var matches: some View {
         if results.isEmpty {
-            hint(icon: "text.magnifyingglass", title: "Ничего не найдено", text: "Попробуйте другое слово или его начало — поиск ищет с начала слова.")
+            hint(icon: "text.magnifyingglass", title: "Nothing found", text: "Try a different word or the start of one — search matches from the beginning of a word.")
         } else {
             List {
                 Section {
@@ -133,7 +133,11 @@ struct FindPlaceView: View {
                         .buttonStyle(.plain)
                     }
                 } header: {
-                    Text(results.count >= Self.resultLimit ? "Первые \(Self.resultLimit) совпадений" : "Найдено: \(results.count)")
+                    if results.count >= Self.resultLimit {
+                        Text(String(format: NSLocalizedString("First %d matches", comment: "search results header, capped"), Self.resultLimit))
+                    } else {
+                        Text(String(format: NSLocalizedString("Found: %d", comment: "search results header, count"), results.count))
+                    }
                 }
             }
             .listStyle(.plain)
@@ -143,7 +147,7 @@ struct FindPlaceView: View {
     @ViewBuilder
     private func pageBadge(_ label: String?) -> some View {
         if let label {
-            Text("стр. \(label)")
+            Text(String(format: NSLocalizedString("p. %@", comment: "page label"), label))
                 .font(.caption.weight(.medium))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
@@ -158,9 +162,9 @@ struct FindPlaceView: View {
             Image(systemName: icon)
                 .font(.system(size: 44))
                 .foregroundStyle(.secondary)
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.title3.bold())
-            Text(text)
+            Text(LocalizedStringKey(text))
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

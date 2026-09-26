@@ -27,9 +27,9 @@ enum PDFTextExtractor {
         var errorDescription: String? {
             switch self {
             case .cannotOpen:
-                return "Не удалось открыть этот PDF."
+                return "Couldn’t open this PDF."
             case .noText:
-                return "На выбранных страницах не найден текстовый слой — вероятно, это скан без OCR."
+                return "No text layer was found on the selected pages — this is likely a scan without OCR."
             }
         }
     }

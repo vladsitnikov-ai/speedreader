@@ -32,23 +32,23 @@ struct LibraryView: View {
             handleImport(result)
         }
         .alert(
-            "Ошибка",
+            "Error",
             isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
         ) {
-            Button("ОК", role: .cancel) { errorMessage = nil }
+            Button("OK", role: .cancel) { errorMessage = nil }
         } message: {
-            Text(errorMessage ?? "")
+            Text(LocalizedStringKey(errorMessage ?? ""))
         }
         .confirmationDialog(
-            "Удалить «\(bookPendingDelete?.title ?? "")»?",
+            String(format: NSLocalizedString("Delete “%@”?", comment: "confirm delete book"), bookPendingDelete?.title ?? ""),
             isPresented: Binding(get: { bookPendingDelete != nil }, set: { if !$0 { bookPendingDelete = nil } }),
             titleVisibility: .visible
         ) {
-            Button("Удалить", role: .destructive) {
+            Button("Delete", role: .destructive) {
                 if let book = bookPendingDelete { library.delete(book) }
                 bookPendingDelete = nil
             }
-            Button("Отмена", role: .cancel) { bookPendingDelete = nil }
+            Button("Cancel", role: .cancel) { bookPendingDelete = nil }
         }
         .sheet(item: $bookForInfo) { book in
             BookInfoView(book: book) { title, author, publisher, year in
@@ -62,7 +62,7 @@ struct LibraryView: View {
 
     private var header: some View {
         HStack {
-            Text("Библиотека")
+            Text("Library")
                 .font(.largeTitle.bold())
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
@@ -75,7 +75,7 @@ struct LibraryView: View {
             Button {
                 isImporting = true
             } label: {
-                Label("Добавить PDF", systemImage: "plus")
+                Label("Add PDF", systemImage: "plus")
             }
             .buttonStyle(.borderedProminent)
         }
@@ -88,9 +88,9 @@ struct LibraryView: View {
             Image(systemName: "books.vertical")
                 .font(.system(size: 64))
                 .foregroundStyle(.secondary)
-            Text("Пока пусто")
+            Text("Nothing here yet")
                 .font(.title2.bold())
-            Text("Добавьте PDF — можно выбрать файл на диске или из Google Диска через системный проводник.")
+            Text("Add a PDF — pick a file on disk or from Google Drive via the system file picker.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -114,23 +114,23 @@ struct LibraryView: View {
                             Button {
                                 onOpen(book)
                             } label: {
-                                Label("Читать", systemImage: "book")
+                                Label("Read", systemImage: "book")
                             }
                             Button {
                                 onShowBookmarks(book)
                             } label: {
-                                Label("Закладки…", systemImage: "bookmark")
+                                Label("Bookmarks…", systemImage: "bookmark")
                             }
                             Button {
                                 bookForInfo = book
                             } label: {
-                                Label("Сведения об издании…", systemImage: "info.circle")
+                                Label("Edition details…", systemImage: "info.circle")
                             }
                             Divider()
                             Button(role: .destructive) {
                                 bookPendingDelete = book
                             } label: {
-                                Label("Удалить", systemImage: "trash")
+                                Label("Delete", systemImage: "trash")
                             }
                         }
                 }
@@ -188,15 +188,15 @@ private struct BookCell: View {
             }
 
             if !book.isConfigured {
-                Label("Выберите страницы", systemImage: "checklist")
+                Label("Choose pages", systemImage: "checklist")
                     .font(.caption)
                     .foregroundStyle(.orange)
             } else if book.progressFraction > 0 {
-                Text("\(Int(book.progressFraction * 100))% прочитано")
+                Text(String(format: NSLocalizedString("%d%% read", comment: "reading progress"), Int(book.progressFraction * 100)))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
-                Text("\(book.selectedPages.count) стр. выбрано")
+                Text(String(format: NSLocalizedString("%d pages selected", comment: "pages selected count"), book.selectedPages.count))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

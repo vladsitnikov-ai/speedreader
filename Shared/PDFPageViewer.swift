@@ -20,11 +20,11 @@ struct PDFCheckView: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
                 if let pageLabel {
-                    Text("· стр. \(pageLabel)")
+                    Text(String(format: NSLocalizedString("· p. %@", comment: "page label"), pageLabel))
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Закрыть", action: onClose)
+                Button("Close", action: onClose)
                     .keyboardShortcut(.cancelAction)
             }
             .padding()

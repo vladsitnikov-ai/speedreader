@@ -81,8 +81,8 @@ struct ORPWordView: View {
 
 #Preview {
     VStack(spacing: 40) {
-        ORPWordView(word: "Читалка")
-        ORPWordView(word: "Читалка", highlightPivot: true)
+        ORPWordView(word: "SpeedReader")
+        ORPWordView(word: "SpeedReader", highlightPivot: true)
     }
     .padding()
 }

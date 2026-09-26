@@ -17,37 +17,37 @@ struct SettingsView: View {
             Divider()
 
             Form {
-                Section("Оформление") {
-                    Picker("Тема", selection: $settings.theme) {
+                Section("Appearance") {
+                    Picker("Theme", selection: $settings.theme) {
                         ForEach(AppTheme.allCases) { theme in
-                            Text(theme.label).tag(theme)
+                            Text(LocalizedStringKey(theme.label)).tag(theme)
                         }
                     }
                     .pickerStyle(.segmented)
                 }
 
                 Section {
-                    Toggle("Подсвечивать букву фиксации", isOn: $settings.highlightPivot)
+                    Toggle("Highlight the fixation letter", isOn: $settings.highlightPivot)
                 } header: {
-                    Text("Чтение")
+                    Text("Reading")
                 } footer: {
-                    Text("Выделяет цветом букву в слове, на которой удобнее всего фиксировать взгляд (ORP), и показывает метки над и под ней. По умолчанию выключено — слово просто показывается по центру.")
+                    Text("Colors the letter in each word that's easiest to fixate on (ORP) and shows marks above and below it. Off by default — the word is just shown centered.")
                 }
 
-                Section("О приложении") {
+                Section("About") {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("SpeedReader \(Self.versionString)")
                             .font(.headline)
-                        Text("Автор — Влад Ситников.")
+                        Text("Created by Vlad Sitnikov.")
                             .font(.body)
-                        Text("Идея приложения вдохновлена Антоном Булановым и его новой книгой «Природа хитрости».")
+                        Text("The idea for this app was inspired by Anton Bulanov and his new book “The Nature of Cunning”.")
                             .font(.body)
                             .foregroundStyle(.secondary)
                         Link(destination: URL(string: "https://vladsitnikov.com")!) {
                             Label("vladsitnikov.com", systemImage: "link")
                         }
                         Link(destination: URL(string: "https://github.com/vladsitnikov-ai/speedreader")!) {
-                            Label("Исходный код и обновления", systemImage: "chevron.left.forwardslash.chevron.right")
+                            Label("Source code & updates", systemImage: "chevron.left.forwardslash.chevron.right")
                         }
                     }
                     .padding(.vertical, 4)
@@ -62,10 +62,10 @@ struct SettingsView: View {
 
     private var header: some View {
         HStack {
-            Text("Настройки")
+            Text("Settings")
                 .font(.title2.bold())
             Spacer()
-            Button("Готово", action: onClose)
+            Button("Done", action: onClose)
         }
         .padding()
     }

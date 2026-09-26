@@ -26,12 +26,12 @@ struct BookInfoView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Button("Отмена", action: onCancel)
+                Button("Cancel", action: onCancel)
                 Spacer()
-                Text("Сведения об издании")
+                Text("Edition details")
                     .font(.headline)
                 Spacer()
-                Button("Сохранить") {
+                Button("Save") {
                     onSave(title, author, publisher, year)
                 }
                 .buttonStyle(.borderedProminent)
@@ -42,12 +42,12 @@ struct BookInfoView: View {
 
             Form {
                 Section {
-                    TextField("Название", text: $title)
-                    TextField("Автор", text: $author)
-                    TextField("Издательство", text: $publisher)
-                    TextField("Год издания", text: $year)
+                    TextField("Title", text: $title)
+                    TextField("Author", text: $author)
+                    TextField("Publisher", text: $publisher)
+                    TextField("Year", text: $year)
                 } footer: {
-                    Text("Эти данные попадут в ссылку при копировании цитат: «цитата» — Автор. Название. Издательство, год, с. N.")
+                    Text("This shows up when you copy a quote: “quote” — Author. Title. Publisher, year, p. N.")
                 }
             }
             .formStyle(.grouped)

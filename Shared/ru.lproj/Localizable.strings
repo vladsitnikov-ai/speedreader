@@ -1,0 +1,111 @@
+/* Common */
+"Done" = "Готово";
+"Library" = "Библиотека";
+"Quotes" = "Цитатник";
+"Close" = "Закрыть";
+"Cancel" = "Отмена";
+"Save" = "Сохранить";
+"Delete" = "Удалить";
+"OK" = "ОК";
+"Error" = "Ошибка";
+"Nothing here yet" = "Пока пусто";
+"p. %@" = "стр. %@";
+"· p. %@" = "· стр. %@";
+
+/* Library */
+"Add PDF" = "Добавить PDF";
+"Add a PDF — pick a file on disk or from Google Drive via the system file picker." = "Добавьте PDF — можно выбрать файл на диске или из Google Диска через системный проводник.";
+"Read" = "Читать";
+"Bookmarks…" = "Закладки…";
+"Edition details…" = "Сведения об издании…";
+"Choose pages" = "Выберите страницы";
+"%d%% read" = "%d%% прочитано";
+"%d pages selected" = "%d стр. выбрано";
+"Delete “%@”?" = "Удалить «%@»?";
+
+/* Edition details sheet */
+"Edition details" = "Сведения об издании";
+"Title" = "Название";
+"Author" = "Автор";
+"Publisher" = "Издательство";
+"Year" = "Год издания";
+"This shows up when you copy a quote: “quote” — Author. Title. Publisher, year, p. N." = "Эти данные попадут в ссылку при копировании цитат: «цитата» — Автор. Название. Издательство, год, с. N.";
+
+/* Page selection */
+"Mark the text you want to read — skip the table of contents and technical pages" = "Отметьте текст, который хотите читать — без оглавлений и техстраниц";
+"From" = "С";
+"to" = "по";
+"Apply" = "Применить";
+"All" = "Все";
+"None" = "Никакие";
+"%d of %d pages selected" = "%d из %d страниц выбрано";
+"Start reading" = "Начать чтение";
+"Opening PDF…" = "Открываю PDF…";
+"Couldn’t open this book’s PDF." = "Не удалось открыть PDF этой книги.";
+"Couldn’t open this PDF." = "Не удалось открыть этот PDF.";
+"No text layer was found on the selected pages — this is likely a scan without OCR." = "На выбранных страницах не найден текстовый слой — вероятно, это скан без OCR.";
+
+/* Reader */
+"Loading text…" = "Загружаю текст…";
+"Back to library" = "Назад в библиотеку";
+"Find place…" = "Найти место…";
+"Contents & search…" = "Оглавление и поиск…";
+"Add bookmark here" = "Добавить закладку здесь";
+"All bookmarks…" = "Все закладки…";
+"All bookmarks (%d)…" = "Все закладки (%d)…";
+"Navigation: contents, search, bookmarks" = "Навигация: оглавление, поиск, закладки";
+"Open this place in the PDF" = "Открыть это место в PDF";
+"Save to quotes" = "Сохранить в цитатник";
+"%@ · p. %@" = "%@ · стр. %@";
+"%d wpm" = "%d слов/мин";
+"Restart" = "В начало";
+"Previous word" = "Предыдущее слово";
+"Pause" = "Пауза";
+"Play" = "Читать";
+"Next word" = "Следующее слово";
+"Slower" = "Медленнее";
+"Faster" = "Быстрее";
+"Words at a time: %d" = "Слов за раз: %d";
+
+/* Bookmarks */
+"Bookmarks" = "Закладки";
+"No bookmarks yet" = "Закладок пока нет";
+"In the reader, tap the bookmark icon → “Add bookmark here”." = "В читалке нажмите на значок закладки → «Добавить закладку здесь».";
+"Rename" = "Переименовать";
+"Bookmark name" = "Название закладки";
+"Page %@. The bookmark will bring you back to this exact word." = "Страница %@. Закладка вернёт вас точно к этому слову.";
+"Rename bookmark" = "Переименовать закладку";
+"New bookmark" = "Новая закладка";
+
+/* Quotes */
+"While reading, tap the quote icon — the sentence will be saved here along with the book and page number." = "Во время чтения нажмите на значок цитаты — предложение сохранится сюда вместе с книгой и номером страницы.";
+"Copied" = "Скопировано";
+"Copy all" = "Копировать все";
+"Copy" = "Копировать";
+
+/* Find place / table of contents / search */
+"Find place" = "Найти место";
+"Word or phrase" = "Слово или фраза";
+"Clear" = "Очистить";
+"Table of Contents" = "Оглавление";
+"No table of contents" = "Оглавления нет";
+"This PDF has no built-in table of contents, and chapter headings weren't detected in the text. Type a word or phrase to find your place." = "В этом PDF нет встроенного оглавления, а заголовки глав в тексте не распознались. Введите слово или фразу, чтобы найти нужное место.";
+"Nothing found" = "Ничего не найдено";
+"Try a different word or the start of one — search matches from the beginning of a word." = "Попробуйте другое слово или его начало — поиск ищет с начала слова.";
+"First %d matches" = "Первые %d совпадений";
+"Found: %d" = "Найдено: %d";
+
+/* Settings */
+"Settings" = "Настройки";
+"Appearance" = "Оформление";
+"Theme" = "Тема";
+"System" = "Системная";
+"Light" = "Светлая";
+"Dark" = "Тёмная";
+"Reading" = "Чтение";
+"Highlight the fixation letter" = "Подсвечивать букву фиксации";
+"Colors the letter in each word that's easiest to fixate on (ORP) and shows marks above and below it. Off by default — the word is just shown centered." = "Выделяет цветом букву в слове, на которой удобнее всего фиксировать взгляд (ORP), и показывает метки над и под ней. По умолчанию выключено — слово просто показывается по центру.";
+"About" = "О приложении";
+"Created by Vlad Sitnikov." = "Автор — Влад Ситников.";
+"The idea for this app was inspired by Anton Bulanov and his new book “The Nature of Cunning”." = "Идея приложения вдохновлена Антоном Булановым и его новой книгой «Природа хитрости».";
+"Source code & updates" = "Исходный код и обновления";

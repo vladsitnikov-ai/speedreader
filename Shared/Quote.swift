@@ -18,10 +18,10 @@ struct Quote: Identifiable, Equatable {
         return nil
     }
 
-    /// «Текст» — Автор. Название. Издательство, год, с. N
+    /// “Text” — Author. Title. Publisher, year, p. N
     func formatted(book: Book?) -> String {
-        var result = "«\(text)» — \(book?.citation ?? bookTitle)"
-        if let page = pageLabel { result += ", с. \(page)" }
+        var result = "“\(text)” — \(book?.citation ?? bookTitle)"
+        if let page = pageLabel { result += ", p. \(page)" }
         return result
     }
 }

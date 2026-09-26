@@ -25,15 +25,15 @@ struct ReaderContainerView: View {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 40))
                         .foregroundStyle(.secondary)
-                    Text(errorMessage)
+                    Text(LocalizedStringKey(errorMessage))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
-                    Button("Назад в библиотеку", action: onClose)
+                    Button("Back to library", action: onClose)
                         .buttonStyle(.borderedProminent)
                 }
                 .padding()
             } else if isLoading {
-                ProgressView("Загружаю текст…")
+                ProgressView("Loading text…")
                     .padding()
             } else {
                 ReaderView(
@@ -62,7 +62,7 @@ struct ReaderContainerView: View {
         }
         .sheet(isPresented: $isNamingBookmark) {
             BookmarkNameView(
-                title: "Новая закладка",
+                title: "New bookmark",
                 defaultName: defaultBookmarkName(),
                 pageLabel: engine.currentPageLabel
             ) { name in

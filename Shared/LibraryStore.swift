@@ -8,7 +8,7 @@ final class LibraryStore: ObservableObject {
     enum ImportError: LocalizedError {
         case cannotOpen
         var errorDescription: String? {
-            "Не удалось открыть этот PDF."
+            "Couldn’t open this PDF."
         }
     }
 

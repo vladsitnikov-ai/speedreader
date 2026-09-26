@@ -67,7 +67,7 @@ struct QuotesView: View {
 
     private var header: some View {
         HStack {
-            Text("Цитатник")
+            Text("Quotes")
                 .font(.largeTitle.bold())
             Spacer()
         }
@@ -80,9 +80,9 @@ struct QuotesView: View {
             Image(systemName: "quote.bubble")
                 .font(.system(size: 64))
                 .foregroundStyle(.secondary)
-            Text("Пока пусто")
+            Text("Nothing here yet")
                 .font(.title2.bold())
-            Text("Во время чтения нажмите на значок цитаты — предложение сохранится сюда вместе с книгой и номером страницы.")
+            Text("While reading, tap the quote icon — the sentence will be saved here along with the book and page number.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -100,7 +100,7 @@ struct QuotesView: View {
             Button {
                 copy(group.quotes.map { $0.formatted(book: group.book) }.joined(separator: "\n\n"), id: group.id)
             } label: {
-                Label(copiedID == group.id ? "Скопировано" : "Копировать все", systemImage: copiedID == group.id ? "checkmark" : "doc.on.doc")
+                Label(copiedID == group.id ? "Copied" : "Copy all", systemImage: copiedID == group.id ? "checkmark" : "doc.on.doc")
                     .font(.caption)
                     .textCase(nil)
             }
@@ -116,7 +116,7 @@ struct QuotesView: View {
 
             HStack {
                 if let page = quote.pageLabel {
-                    Text("стр. \(page)")
+                    Text(String(format: NSLocalizedString("p. %@", comment: "page label"), page))
                         .font(.caption.weight(.medium))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
@@ -129,7 +129,7 @@ struct QuotesView: View {
                 Button {
                     copy(quote.formatted(book: group.book), id: quote.id)
                 } label: {
-                    Label(copiedID == quote.id ? "Скопировано" : "Копировать", systemImage: copiedID == quote.id ? "checkmark" : "doc.on.doc")
+                    Label(copiedID == quote.id ? "Copied" : "Copy", systemImage: copiedID == quote.id ? "checkmark" : "doc.on.doc")
                         .font(.caption)
                 }
                 .buttonStyle(.borderless)
@@ -140,7 +140,7 @@ struct QuotesView: View {
             Button(role: .destructive) {
                 quotes.delete(quote)
             } label: {
-                Label("Удалить", systemImage: "trash")
+                Label("Delete", systemImage: "trash")
             }
         }
     }

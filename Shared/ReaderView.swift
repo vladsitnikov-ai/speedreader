@@ -47,7 +47,7 @@ struct ReaderView: View {
             VStack(spacing: 8) {
                 Image(systemName: "checkmark.circle")
                     .font(.system(size: 40))
-                Text("Готово")
+                Text("Done")
                     .font(.title2)
             }
             .foregroundStyle(.secondary)
@@ -57,7 +57,7 @@ struct ReaderView: View {
     private var header: some View {
         HStack {
             Button(action: onClose) {
-                Label("Библиотека", systemImage: "chevron.left")
+                Label("Library", systemImage: "chevron.left")
             }
             .buttonStyle(.plain)
 
@@ -73,14 +73,14 @@ struct ReaderView: View {
             HStack(spacing: 4) {
                 Menu {
                     Button(action: onFindPlace) {
-                        Label(engine.chapters.isEmpty ? "Найти место…" : "Оглавление и поиск…", systemImage: "text.magnifyingglass")
+                        Label(engine.chapters.isEmpty ? "Find place…" : "Contents & search…", systemImage: "text.magnifyingglass")
                     }
                     .disabled(engine.currentChunk == nil)
 
                     Divider()
 
                     Button(action: onAddBookmark) {
-                        Label("Добавить закладку здесь", systemImage: "bookmark.fill")
+                        Label("Add bookmark here", systemImage: "bookmark.fill")
                     }
                     .disabled(engine.currentChunk == nil)
 
@@ -91,7 +91,7 @@ struct ReaderView: View {
                                 onJumpToBookmark(bookmark)
                             } label: {
                                 if let page = bookmark.pageLabel {
-                                    Text("\(bookmark.title) · стр. \(page)")
+                                    Text(String(format: NSLocalizedString("%@ · p. %@", comment: "bookmark title · page"), bookmark.title, page))
                                 } else {
                                     Text(bookmark.title)
                                 }
@@ -101,7 +101,15 @@ struct ReaderView: View {
 
                     Divider()
                     Button(action: onShowBookmarks) {
-                        Label(bookmarks.isEmpty ? "Все закладки…" : "Все закладки (\(bookmarks.count))…", systemImage: "list.bullet")
+                        Label {
+                            if bookmarks.isEmpty {
+                                Text("All bookmarks…")
+                            } else {
+                                Text(String(format: NSLocalizedString("All bookmarks (%d)…", comment: "bookmarks menu item with count"), bookmarks.count))
+                            }
+                        } icon: {
+                            Image(systemName: "list.bullet")
+                        }
                     }
                 } label: {
                     Image(systemName: bookmarks.isEmpty ? "list.bullet" : "bookmark.fill")
@@ -112,7 +120,7 @@ struct ReaderView: View {
                 .plainMenuStyle()
                 .menuIndicator(.hidden)
                 .fixedSize()
-                .accessibilityLabel("Навигация: оглавление, поиск, закладки")
+                .accessibilityLabel("Navigation: contents, search, bookmarks")
 
                 Button(action: onOpenPDF) {
                     Image(systemName: "doc.text.magnifyingglass")
@@ -122,7 +130,7 @@ struct ReaderView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(engine.currentChunk == nil)
-                .accessibilityLabel("Открыть это место в PDF")
+                .accessibilityLabel("Open this place in the PDF")
 
                 Button(action: saveQuote) {
                     Image(systemName: justSavedQuote ? "checkmark.circle.fill" : "quote.bubble")
@@ -132,7 +140,7 @@ struct ReaderView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(engine.currentChunk == nil)
-                .accessibilityLabel("Сохранить в цитатник")
+                .accessibilityLabel("Save to quotes")
             }
         }
     }
@@ -158,10 +166,10 @@ struct ReaderView: View {
             HStack {
                 Text("\(String(min(engine.currentIndex + 1, engine.chunks.count))) / \(String(max(engine.chunks.count, 1)))")
                 if let page = engine.currentPageLabel {
-                    Text("· стр. \(page)")
+                    Text(String(format: NSLocalizedString("· p. %@", comment: "page label"), page))
                 }
                 Spacer()
-                Text("\(Int(engine.wordsPerMinute)) слов/мин")
+                Text(String(format: NSLocalizedString("%d wpm", comment: "words per minute"), Int(engine.wordsPerMinute)))
             }
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -174,23 +182,23 @@ struct ReaderView: View {
             Button(action: engine.restart) {
                 Image(systemName: "backward.end.fill")
             }
-            .accessibilityLabel("В начало")
+            .accessibilityLabel("Restart")
             Button(action: engine.stepBackward) {
                 Image(systemName: "backward.frame.fill")
             }
             .keyboardShortcut(.leftArrow, modifiers: [])
-            .accessibilityLabel("Предыдущее слово")
+            .accessibilityLabel("Previous word")
             Button(action: engine.togglePlay) {
                 Image(systemName: engine.isPlaying ? "pause.circle.fill" : "play.circle.fill")
                     .font(.system(size: 52))
             }
             .keyboardShortcut(.space, modifiers: [])
-            .accessibilityLabel(engine.isPlaying ? "Пауза" : "Читать")
+            .accessibilityLabel(engine.isPlaying ? "Pause" : "Play")
             Button(action: engine.stepForward) {
                 Image(systemName: "forward.frame.fill")
             }
             .keyboardShortcut(.rightArrow, modifiers: [])
-            .accessibilityLabel("Следующее слово")
+            .accessibilityLabel("Next word")
         }
         .font(.system(size: 22))
         .buttonStyle(.plain)
@@ -205,7 +213,7 @@ struct ReaderView: View {
                 }
                 .buttonStyle(.plain)
                 .keyboardShortcut(.downArrow, modifiers: [])
-                .accessibilityLabel("Медленнее")
+                .accessibilityLabel("Slower")
 
                 Slider(value: $engine.wordsPerMinute, in: Self.speedRange, step: 10)
 
@@ -215,10 +223,10 @@ struct ReaderView: View {
                 }
                 .buttonStyle(.plain)
                 .keyboardShortcut(.upArrow, modifiers: [])
-                .accessibilityLabel("Быстрее")
+                .accessibilityLabel("Faster")
             }
             Stepper(
-                "Слов за раз: \(engine.wordsPerChunk)",
+                String(format: NSLocalizedString("Words at a time: %d", comment: "words-per-chunk stepper"), engine.wordsPerChunk),
                 value: $engine.wordsPerChunk,
                 in: 1...4
             )
