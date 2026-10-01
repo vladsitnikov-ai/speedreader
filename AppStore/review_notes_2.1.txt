@@ -1,13 +1,18 @@
 Reply to Guideline 2.1 (Information Needed):
 
+Since this conversation started, we've also submitted a new build (build 7) with a few
+improvements: the UI is now in English by default (with a Russian localization), and
+the app can now import EPUB and plain-text files in addition to PDF. The core
+functionality and the answers below are unchanged.
+
 1) Screen recording: attached separately — captured on a physical Mac running the latest macOS. It starts with launching the app and shows the full typical flow: importing a PDF, selecting pages, and reading with the RSVP (rapid serial visual presentation) engine, plus bookmarks, quotes, and the table-of-contents/search panel. The app has no accounts, no user-generated content shared with others, and no paid features, so those additional recording requirements don't apply.
 
-2) Purpose and audience: NextSpeedReader is a speed-reading utility for PDFs. It uses RSVP to display one or a few words at a time at a pace the reader sets, instead of the reader's eyes scanning across the page — this removes the time lost to eye movement between words and lines, so people can read noticeably faster while staying focused on one fixation point. The audience is anyone who reads long PDFs regularly and wants to read faster with less effort — students, researchers, and general readers working through e-books, articles, or reports.
+2) Purpose and audience: NextSpeedReader is a speed-reading utility for PDFs, EPUBs, and plain-text files. It uses RSVP to display one or a few words at a time at a pace the reader sets, instead of the reader's eyes scanning across the page — this removes the time lost to eye movement between words and lines, so people can read noticeably faster while staying focused on one fixation point. The audience is anyone who reads long documents regularly and wants to read faster with less effort — students, researchers, and general readers working through e-books, articles, or reports.
 
 3) Setup / main features — no login or account of any kind is required:
 - Launch the app. The Library screen starts empty.
-- Click "Add PDF" and choose any PDF with a text layer (any PDF works; no sample file or demo credentials are needed).
-- On the page-selection screen, choose which pages to read (all pages are selected by default) and click "Start reading".
+- Click "Add Book" and choose a PDF, EPUB, or text file (any file with a text layer works; no sample file or demo credentials are needed).
+- On the page/chapter-selection screen, choose which pages or chapters to read (all are selected by default) and click "Start reading".
 - The reader shows text at an adjustable words-per-minute pace, with play/pause, step forward/back, and speed controllable on-screen or via the keyboard (arrow keys, space bar).
 - From the reader header: save the current sentence as a quote, jump to a bookmark, open table-of-contents/full-text search, or view the current position in the original PDF page.
 - From the Library, right-click a book to read it, view its bookmarks, edit its citation details, or delete it.
