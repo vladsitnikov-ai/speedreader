@@ -1,11 +1,22 @@
 import Foundation
 
+enum BookFormat: String, Codable {
+    case pdf, epub, txt
+
+    var fileExtension: String { rawValue }
+
+    static func from(fileExtension ext: String) -> BookFormat? {
+        BookFormat(rawValue: ext.lowercased())
+    }
+}
+
 struct Book: Identifiable, Equatable {
     let id: UUID
     var title: String
     var author: String = ""
     var publisher: String = ""
     var year: String = ""
+    var format: BookFormat = .pdf
     var pageCount: Int
     /// 0-based page indices to read, in reading order. Empty = not configured yet (needs page selection).
     var selectedPages: [Int]
@@ -35,7 +46,7 @@ struct Book: Identifiable, Equatable {
 
 extension Book: Codable {
     private enum CodingKeys: String, CodingKey {
-        case id, title, author, publisher, year, pageCount, selectedPages, dateAdded, bookmarkChunkIndex, totalChunks
+        case id, title, author, publisher, year, format, pageCount, selectedPages, dateAdded, bookmarkChunkIndex, totalChunks
     }
 
     init(from decoder: Decoder) throws {
@@ -45,6 +56,8 @@ extension Book: Codable {
         author = try container.decodeIfPresent(String.self, forKey: .author) ?? ""
         publisher = try container.decodeIfPresent(String.self, forKey: .publisher) ?? ""
         year = try container.decodeIfPresent(String.self, forKey: .year) ?? ""
+        // Books saved before non-PDF formats existed have no "format" field — they're all PDFs.
+        format = try container.decodeIfPresent(BookFormat.self, forKey: .format) ?? .pdf
         pageCount = try container.decode(Int.self, forKey: .pageCount)
         selectedPages = try container.decode([Int].self, forKey: .selectedPages)
         dateAdded = try container.decode(Date.self, forKey: .dateAdded)

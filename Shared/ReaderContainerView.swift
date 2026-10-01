@@ -41,7 +41,7 @@ struct ReaderContainerView: View {
                     documentTitle: book.title,
                     bookmarks: bookmarkStore.bookmarks(for: book.id),
                     onSaveQuote: saveCurrentQuote,
-                    onOpenPDF: openPDF,
+                    onOpenPDF: book.format == .pdf ? openPDF : nil,
                     onAddBookmark: { engine.pause(); isNamingBookmark = true },
                     onJumpToBookmark: { engine.seek(toWordIndex: $0.wordIndex) },
                     onShowBookmarks: { engine.pause(); isShowingBookmarks = true },
@@ -87,7 +87,7 @@ struct ReaderContainerView: View {
         }
         .fullScreenPresentation(isPresented: $isShowingPDF) {
             PDFCheckView(
-                url: library.pdfURL(for: book),
+                url: library.fileURL(for: book),
                 pageIndex: engine.currentPageIndex ?? 0,
                 pageLabel: engine.currentPageLabel,
                 sentence: engine.currentSentence(),
@@ -106,9 +106,17 @@ struct ReaderContainerView: View {
 
     private func loadBook() async {
         do {
-            let url = library.pdfURL(for: book)
+            let url = library.fileURL(for: book)
             let pages = book.selectedPages.isEmpty ? Array(0..<book.pageCount) : book.selectedPages
-            let extracted = try PDFTextExtractor.extract(from: url, pages: pages)
+            let extracted: ExtractedText
+            switch book.format {
+            case .pdf:
+                extracted = try PDFTextExtractor.extract(from: url, pages: pages)
+            case .epub:
+                extracted = try EPUBTextExtractor.extract(from: url, pages: pages)
+            case .txt:
+                extracted = try TxtTextExtractor.extract(from: url)
+            }
             engine.load(
                 words: extracted.words,
                 pageIndices: extracted.wordPageIndices,
@@ -121,7 +129,7 @@ struct ReaderContainerView: View {
                 engine.restore(currentIndex: book.bookmarkChunkIndex)
             }
             isLoading = false
-            if LaunchOptions.showPDF {
+            if LaunchOptions.showPDF, book.format == .pdf {
                 isShowingPDF = true
             }
         } catch {

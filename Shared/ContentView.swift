@@ -75,7 +75,7 @@ private struct LibraryFlow: View {
                 // Always resolved fresh from the store rather than captured once, so a stale
                 // snapshot can never overwrite a bookmark that was saved after this case was set.
                 if let book = library.books.first(where: { $0.id == id }) {
-                    PageSelectionView(book: book, pdfURL: library.pdfURL(for: book)) { pages in
+                    PageSelectionView(book: book, fileURL: library.fileURL(for: book)) { pages in
                         library.updateSelectedPages(pages, for: book.id)
                         screen = .reading(book.id, startWordIndex: nil)
                     } onCancel: {

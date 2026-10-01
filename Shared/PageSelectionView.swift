@@ -3,11 +3,24 @@ import PDFKit
 
 struct PageSelectionView: View {
     let book: Book
-    let pdfURL: URL
+    let fileURL: URL
     let onConfirm: ([Int]) -> Void
     let onCancel: () -> Void
 
-    @State private var document: PDFDocument?
+    private enum Source {
+        case pdf(PDFDocument)
+        /// One short label per chapter (EPUB's spine), for the list rows.
+        case epub(titles: [String])
+
+        var pageCount: Int {
+            switch self {
+            case .pdf(let document): return document.pageCount
+            case .epub(let titles): return titles.count
+            }
+        }
+    }
+
+    @State private var source: Source?
     @State private var loadFailed = false
     @State private var selected: Set<Int> = []
     @State private var rangeStart: String = "1"
@@ -20,33 +33,45 @@ struct PageSelectionView: View {
             rangeBar
             Divider()
 
-            if let document {
-                ScrollView {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 14)], spacing: 18) {
-                        ForEach(0..<document.pageCount, id: \.self) { index in
-                            PageThumbnailCell(
-                                document: document,
-                                index: index,
-                                isSelected: selected.contains(index)
-                            ) {
+            if let source {
+                switch source {
+                case .pdf(let document):
+                    ScrollView {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 14)], spacing: 18) {
+                            ForEach(0..<document.pageCount, id: \.self) { index in
+                                PageThumbnailCell(
+                                    document: document,
+                                    index: index,
+                                    isSelected: selected.contains(index)
+                                ) {
+                                    toggle(index)
+                                }
+                            }
+                        }
+                        .padding()
+                    }
+                case .epub(let titles):
+                    List {
+                        ForEach(Array(titles.enumerated()), id: \.offset) { index, title in
+                            ChapterRow(index: index, title: title, isSelected: selected.contains(index)) {
                                 toggle(index)
                             }
                         }
                     }
-                    .padding()
+                    .listStyle(.plain)
                 }
             } else if loadFailed {
                 Spacer()
                 VStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 32))
-                    Text("Couldn’t open this book’s PDF.")
+                    Text(book.format == .pdf ? "Couldn’t open this book’s PDF." : "Couldn’t open this book’s EPUB.")
                 }
                 .foregroundStyle(.secondary)
                 Spacer()
             } else {
                 Spacer()
-                ProgressView("Opening PDF…")
+                ProgressView(book.format == .pdf ? "Opening PDF…" : "Opening book…")
                 Spacer()
             }
 
@@ -54,23 +79,40 @@ struct PageSelectionView: View {
             footer
         }
         .task {
-            if document == nil {
-                document = PDFDocument(url: pdfURL)
-                if let count = document?.pageCount {
-                    rangeEnd = "\(count)"
-                    if book.selectedPages.isEmpty {
-                        selected = Set(0..<count)
-                    } else {
-                        selected = Set(book.selectedPages)
-                    }
-                } else {
-                    loadFailed = true
-                }
+            if source == nil {
+                loadSource()
             }
         }
         #if os(macOS)
         .frame(minWidth: 640, minHeight: 560)
         #endif
+    }
+
+    private func loadSource() {
+        switch book.format {
+        case .pdf:
+            guard let document = PDFDocument(url: fileURL) else {
+                loadFailed = true
+                return
+            }
+            applySelection(pageCount: document.pageCount)
+            source = .pdf(document)
+        case .epub:
+            guard let titles = try? EPUBTextExtractor.chapterTitles(from: fileURL), !titles.isEmpty else {
+                loadFailed = true
+                return
+            }
+            applySelection(pageCount: titles.count)
+            source = .epub(titles: titles)
+        case .txt:
+            // Plain text has no page-selection step — it's auto-configured on import.
+            loadFailed = true
+        }
+    }
+
+    private func applySelection(pageCount: Int) {
+        rangeEnd = "\(pageCount)"
+        selected = book.selectedPages.isEmpty ? Set(0..<pageCount) : Set(book.selectedPages)
     }
 
     private var header: some View {
@@ -81,7 +123,7 @@ struct PageSelectionView: View {
             .buttonStyle(.plain)
             Spacer()
             VStack(spacing: 2) {
-                Text("Choose pages")
+                Text(book.format == .pdf ? "Choose pages" : "Choose chapters")
                     .font(.headline)
                 Text("Mark the text you want to read — skip the table of contents and technical pages")
                     .font(.caption)
@@ -115,7 +157,7 @@ struct PageSelectionView: View {
 
             Spacer()
 
-            Button("All") { if let c = document?.pageCount { selected = Set(0..<c) } }
+            Button("All") { if let c = source?.pageCount { selected = Set(0..<c) } }
                 .buttonStyle(.borderless)
             Button("None") { selected.removeAll() }
                 .buttonStyle(.borderless)
@@ -126,7 +168,7 @@ struct PageSelectionView: View {
 
     private var footer: some View {
         HStack {
-            Text(String(format: NSLocalizedString("%d of %d pages selected", comment: "page selection footer"), selected.count, document?.pageCount ?? book.pageCount))
+            Text(String(format: NSLocalizedString("%d of %d pages selected", comment: "page selection footer"), selected.count, source?.pageCount ?? book.pageCount))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             Spacer()
@@ -148,7 +190,7 @@ struct PageSelectionView: View {
     }
 
     private func applyRange() {
-        guard let count = document?.pageCount else { return }
+        guard let count = source?.pageCount else { return }
         let start = max(1, Int(rangeStart) ?? 1)
         let end = min(count, Int(rangeEnd) ?? count)
         guard start <= end else { return }
@@ -202,5 +244,28 @@ private struct PageThumbnailCell: View {
             guard image == nil, let page = document.page(at: index) else { return }
             image = page.thumbnail(of: CGSize(width: 220, height: 300), for: .mediaBox)
         }
+    }
+}
+
+private struct ChapterRow: View {
+    let index: Int
+    let title: String
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(isSelected ? Color.accentColor : Color.gray.opacity(0.4))
+                .font(.system(size: 20))
+            Text(title)
+                .font(.body)
+                .lineLimit(2)
+                .foregroundStyle(.primary)
+            Spacer()
+        }
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onTap)
+        .padding(.vertical, 2)
     }
 }

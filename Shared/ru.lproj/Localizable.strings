@@ -13,8 +13,8 @@
 "· p. %@" = "· стр. %@";
 
 /* Library */
-"Add PDF" = "Добавить PDF";
-"Add a PDF — pick a file on disk or from Google Drive via the system file picker." = "Добавьте PDF — можно выбрать файл на диске или из Google Диска через системный проводник.";
+"Add Book" = "Добавить книгу";
+"Add a PDF, EPUB, or text file — pick one on disk or from Google Drive via the system file picker." = "Добавьте PDF, EPUB или текстовый файл — можно выбрать на диске или из Google Диска через системный проводник.";
 "Read" = "Читать";
 "Bookmarks…" = "Закладки…";
 "Edition details…" = "Сведения об издании…";
@@ -40,11 +40,21 @@
 "None" = "Никакие";
 "%d of %d pages selected" = "%d из %d страниц выбрано";
 "Start reading" = "Начать чтение";
+"Choose chapters" = "Выберите главы";
 "Opening PDF…" = "Открываю PDF…";
+"Opening book…" = "Открываю книгу…";
 "Couldn’t open this book’s PDF." = "Не удалось открыть PDF этой книги.";
+"Couldn’t open this book’s EPUB." = "Не удалось открыть EPUB этой книги.";
 "Couldn’t open this PDF." = "Не удалось открыть этот PDF.";
+"Couldn’t open this file." = "Не удалось открыть этот файл.";
+"This file type isn’t supported — add a PDF, EPUB, or plain text file." = "Этот тип файла не поддерживается — добавьте PDF, EPUB или текстовый файл.";
 "No text layer was found on the selected pages — this is likely a scan without OCR." = "На выбранных страницах не найден текстовый слой — вероятно, это скан без OCR.";
 "This PDF's text layer looks corrupted — letters can't be read even though the pages display fine, usually because of a broken font in the file itself. Try re-creating the PDF with OCR (for example with ocrmypdf) and import it again." = "Текстовый слой этого PDF повреждён — буквы не читаются, хотя страницы отображаются нормально; обычно это из-за битого шрифта внутри самого файла. Попробуйте пересоздать PDF через OCR (например, ocrmypdf) и импортировать заново.";
+"Couldn’t open this EPUB." = "Не удалось открыть этот EPUB.";
+"No readable chapters were found in this EPUB." = "В этом EPUB не нашлось глав с читаемым текстом.";
+"Chapter %d" = "Глава %d";
+"Couldn’t open this text file." = "Не удалось открыть этот текстовый файл.";
+"This text file appears to be empty." = "Этот текстовый файл выглядит пустым.";
 
 /* Reader */
 "Loading text…" = "Загружаю текст…";

@@ -26,7 +26,7 @@ struct LibraryView: View {
         }
         .fileImporter(
             isPresented: $isImporting,
-            allowedContentTypes: [.pdf],
+            allowedContentTypes: [.pdf, .epub, .plainText],
             allowsMultipleSelection: false
         ) { result in
             handleImport(result)
@@ -75,7 +75,7 @@ struct LibraryView: View {
             Button {
                 isImporting = true
             } label: {
-                Label("Add PDF", systemImage: "plus")
+                Label("Add Book", systemImage: "plus")
             }
             .buttonStyle(.borderedProminent)
         }
@@ -90,7 +90,7 @@ struct LibraryView: View {
                 .foregroundStyle(.secondary)
             Text("Nothing here yet")
                 .font(.title2.bold())
-            Text("Add a PDF — pick a file on disk or from Google Drive via the system file picker.")
+            Text("Add a PDF, EPUB, or text file — pick one on disk or from Google Drive via the system file picker.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -146,7 +146,7 @@ struct LibraryView: View {
         case .success(let urls):
             guard let url = urls.first else { return }
             do {
-                let book = try library.importPDF(from: url)
+                let book = try library.importBook(from: url)
                 onOpen(book)
             } catch {
                 errorMessage = error.localizedDescription

@@ -2,24 +2,6 @@ import Foundation
 import PDFKit
 
 enum PDFTextExtractor {
-    struct ExtractedText {
-        let words: [String]
-        /// 0-based PDF page index each word came from (same length as `words`).
-        let wordPageIndices: [Int]
-        /// PDF page index → page number as printed on the page, when one was detected.
-        let printedPageNumbers: [Int: String]
-        /// Chapter starts: the PDF's own outline when it has one, otherwise headings spotted in the text.
-        let headings: [Heading]
-    }
-
-    struct Heading {
-        let title: String
-        /// Nesting depth (0 = top level); always 0 for headings spotted in the text.
-        let level: Int
-        let wordIndex: Int
-        let pageIndex: Int
-    }
-
     enum ExtractionError: LocalizedError {
         case cannotOpen
         case noText
@@ -126,26 +108,6 @@ enum PDFTextExtractor {
     }
 
     // MARK: - Chapters
-
-    private static let chapterPattern = try! NSRegularExpression(
-        pattern: #"^\s*(глава|часть|раздел|книга|пролог|эпилог|введение|заключение|предисловие|послесловие|chapter|part|book|prologue|epilogue|introduction|conclusion|preface|afterword)\b"#,
-        options: [.caseInsensitive]
-    )
-
-    /// Short lines that start like a chapter title ("Глава 3", "ЧАСТЬ ВТОРАЯ", "Пролог")
-    /// or are set entirely in capitals.
-    private static func looksLikeHeading(_ line: String) -> Bool {
-        let words = line.split(whereSeparator: { $0.isWhitespace })
-        guard !words.isEmpty, words.count <= 10, line.count <= 80 else { return false }
-        if let last = line.last, ",;:".contains(last) { return false }
-
-        if chapterPattern.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)) != nil {
-            return true
-        }
-        let letters = line.filter { $0.isLetter }
-        guard letters.count >= 5 else { return false }
-        return letters.allSatisfy { $0.isUppercase }
-    }
 
     /// The PDF's own outline (bookmarks panel), mapped onto the first word of each entry's page.
     private static func outlineHeadings(in document: PDFDocument, wordPages: [Int]) -> [Heading] {

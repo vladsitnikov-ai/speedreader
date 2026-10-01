@@ -103,7 +103,7 @@ final class RSVPEngine: ObservableObject {
         words: [String],
         pageIndices: [Int] = [],
         printedPages: [Int: String] = [:],
-        headings: [PDFTextExtractor.Heading] = []
+        headings: [Heading] = []
     ) {
         pause()
         rawWords = words

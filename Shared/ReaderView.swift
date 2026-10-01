@@ -6,7 +6,7 @@ struct ReaderView: View {
     let documentTitle: String
     let bookmarks: [Bookmark]
     let onSaveQuote: () -> Bool
-    let onOpenPDF: () -> Void
+    let onOpenPDF: (() -> Void)?
     let onAddBookmark: () -> Void
     let onJumpToBookmark: (Bookmark) -> Void
     let onShowBookmarks: () -> Void
@@ -122,15 +122,17 @@ struct ReaderView: View {
                 .fixedSize()
                 .accessibilityLabel("Navigation: contents, search, bookmarks")
 
-                Button(action: onOpenPDF) {
-                    Image(systemName: "doc.text.magnifyingglass")
-                        .font(.system(size: 18))
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
+                if let onOpenPDF {
+                    Button(action: onOpenPDF) {
+                        Image(systemName: "doc.text.magnifyingglass")
+                            .font(.system(size: 18))
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(engine.currentChunk == nil)
+                    .accessibilityLabel("Open this place in the PDF")
                 }
-                .buttonStyle(.plain)
-                .disabled(engine.currentChunk == nil)
-                .accessibilityLabel("Open this place in the PDF")
 
                 Button(action: saveQuote) {
                     Image(systemName: justSavedQuote ? "checkmark.circle.fill" : "quote.bubble")

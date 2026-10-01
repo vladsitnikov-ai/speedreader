@@ -7,8 +7,15 @@ final class LibraryStore: ObservableObject {
 
     enum ImportError: LocalizedError {
         case cannotOpen
+        case unsupportedFormat
+
         var errorDescription: String? {
-            "Couldn’t open this PDF."
+            switch self {
+            case .cannotOpen:
+                return "Couldn’t open this file."
+            case .unsupportedFormat:
+                return "This file type isn’t supported — add a PDF, EPUB, or plain text file."
+            }
         }
     }
 
@@ -29,8 +36,8 @@ final class LibraryStore: ObservableObject {
         load()
     }
 
-    func pdfURL(for book: Book) -> URL {
-        filesDir.appendingPathComponent("\(book.id.uuidString).pdf")
+    func fileURL(for book: Book) -> URL {
+        filesDir.appendingPathComponent("\(book.id.uuidString).\(book.format.fileExtension)")
     }
 
     func thumbnailURL(for book: Book) -> URL {
@@ -38,46 +45,68 @@ final class LibraryStore: ObservableObject {
     }
 
     @discardableResult
-    func importPDF(from sourceURL: URL) throws -> Book {
+    func importBook(from sourceURL: URL) throws -> Book {
+        guard let format = BookFormat.from(fileExtension: sourceURL.pathExtension) else {
+            throw ImportError.unsupportedFormat
+        }
+
         let didAccess = sourceURL.startAccessingSecurityScopedResource()
         defer { if didAccess { sourceURL.stopAccessingSecurityScopedResource() } }
 
-        guard let document = PDFDocument(url: sourceURL) else {
-            throw ImportError.cannotOpen
-        }
-
         let id = UUID()
-        let destURL = filesDir.appendingPathComponent("\(id.uuidString).pdf")
+        let destURL = filesDir.appendingPathComponent("\(id.uuidString).\(format.fileExtension)")
+
+        switch format {
+        case .pdf:
+            guard let document = PDFDocument(url: sourceURL) else { throw ImportError.cannotOpen }
+            try copy(sourceURL, to: destURL)
+            let title = (document.documentAttributes?[PDFDocumentAttribute.titleAttribute] as? String)
+                .flatMap { $0.trimmingCharacters(in: .whitespaces).isEmpty ? nil : $0 }
+                ?? sourceURL.deletingPathExtension().lastPathComponent
+            let author = (document.documentAttributes?[PDFDocumentAttribute.authorAttribute] as? String)?
+                .trimmingCharacters(in: .whitespaces) ?? ""
+            let book = Book(
+                id: id, title: title, author: author, format: .pdf, pageCount: document.pageCount,
+                selectedPages: [], dateAdded: Date(), bookmarkChunkIndex: 0, totalChunks: 0
+            )
+            if let page = document.page(at: 0) {
+                let thumb = page.thumbnail(of: CGSize(width: 300, height: 420), for: .mediaBox)
+                if let data = thumb.pngData_() {
+                    try? data.write(to: thumbnailURL(for: book))
+                }
+            }
+            books.insert(book, at: 0)
+            persist()
+            return book
+
+        case .epub:
+            guard let info = try? EPUBTextExtractor.quickInfo(from: sourceURL) else { throw ImportError.cannotOpen }
+            try copy(sourceURL, to: destURL)
+            let book = Book(
+                id: id, title: info.title, author: info.author, format: .epub, pageCount: info.pageCount,
+                selectedPages: [], dateAdded: Date(), bookmarkChunkIndex: 0, totalChunks: 0
+            )
+            books.insert(book, at: 0)
+            persist()
+            return book
+
+        case .txt:
+            try copy(sourceURL, to: destURL)
+            let info = TxtTextExtractor.quickInfo(from: sourceURL)
+            // No meaningful page split for plain text — it's ready to read as soon as it's imported.
+            let book = Book(
+                id: id, title: info.title, author: "", format: .txt, pageCount: info.pageCount,
+                selectedPages: [0], dateAdded: Date(), bookmarkChunkIndex: 0, totalChunks: 0
+            )
+            books.insert(book, at: 0)
+            persist()
+            return book
+        }
+    }
+
+    private func copy(_ sourceURL: URL, to destURL: URL) throws {
         try? fileManager.removeItem(at: destURL)
         try fileManager.copyItem(at: sourceURL, to: destURL)
-
-        let title = (document.documentAttributes?[PDFDocumentAttribute.titleAttribute] as? String)
-            .flatMap { $0.trimmingCharacters(in: .whitespaces).isEmpty ? nil : $0 }
-            ?? sourceURL.deletingPathExtension().lastPathComponent
-        let author = (document.documentAttributes?[PDFDocumentAttribute.authorAttribute] as? String)?
-            .trimmingCharacters(in: .whitespaces) ?? ""
-
-        let book = Book(
-            id: id,
-            title: title,
-            author: author,
-            pageCount: document.pageCount,
-            selectedPages: [],
-            dateAdded: Date(),
-            bookmarkChunkIndex: 0,
-            totalChunks: 0
-        )
-
-        if let page = document.page(at: 0) {
-            let thumb = page.thumbnail(of: CGSize(width: 300, height: 420), for: .mediaBox)
-            if let data = thumb.pngData_() {
-                try? data.write(to: thumbnailURL(for: book))
-            }
-        }
-
-        books.insert(book, at: 0)
-        persist()
-        return book
     }
 
     func updateSelectedPages(_ pages: [Int], for bookID: UUID) {
@@ -106,7 +135,7 @@ final class LibraryStore: ObservableObject {
     }
 
     func delete(_ book: Book) {
-        try? fileManager.removeItem(at: pdfURL(for: book))
+        try? fileManager.removeItem(at: fileURL(for: book))
         try? fileManager.removeItem(at: thumbnailURL(for: book))
         books.removeAll { $0.id == book.id }
         persist()
