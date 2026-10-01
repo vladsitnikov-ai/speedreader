@@ -1,0 +1,20 @@
+Reply to Guideline 2.1 (Information Needed):
+
+1) Screen recording: attached separately — captured on a physical Mac running the latest macOS. It starts with launching the app and shows the full typical flow: importing a PDF, selecting pages, and reading with the RSVP (rapid serial visual presentation) engine, plus bookmarks, quotes, and the table-of-contents/search panel. The app has no accounts, no user-generated content shared with others, and no paid features, so those additional recording requirements don't apply.
+
+2) Purpose and audience: NextSpeedReader is a speed-reading utility for PDFs. It uses RSVP to display one or a few words at a time at a pace the reader sets, instead of the reader's eyes scanning across the page — this removes the time lost to eye movement between words and lines, so people can read noticeably faster while staying focused on one fixation point. The audience is anyone who reads long PDFs regularly and wants to read faster with less effort — students, researchers, and general readers working through e-books, articles, or reports.
+
+3) Setup / main features — no login or account of any kind is required:
+- Launch the app. The Library screen starts empty.
+- Click "Add PDF" and choose any PDF with a text layer (any PDF works; no sample file or demo credentials are needed).
+- On the page-selection screen, choose which pages to read (all pages are selected by default) and click "Start reading".
+- The reader shows text at an adjustable words-per-minute pace, with play/pause, step forward/back, and speed controllable on-screen or via the keyboard (arrow keys, space bar).
+- From the reader header: save the current sentence as a quote, jump to a bookmark, open table-of-contents/full-text search, or view the current position in the original PDF page.
+- From the Library, right-click a book to read it, view its bookmarks, edit its citation details, or delete it.
+- The gear icon opens Settings (theme, and an optional reading aid that highlights one letter per word).
+
+4) External services: none. The app works fully offline and contains no analytics, ads, third-party SDKs, network calls, or backend of any kind. PDF parsing/rendering use only Apple's own PDFKit; the UI is SwiftUI. There is no authentication service, payment processor, or AI/data provider anywhere in the app.
+
+5) Regional differences: none. The app behaves identically in every region — same features, same content, nothing region-gated. The only variation is UI language, which follows the device's system language (English by default, with a Russian localization); that's a language preference, not a feature or content difference.
+
+6) Regulated industry / third-party material: not applicable. This is a general-purpose reading utility, not part of a regulated industry. It does not bundle, distribute, or grant access to any third-party copyrighted book or document — users only read PDF files they import themselves from their own device. The About screen credits the app's creator and mentions the idea was inspired by a book by a named author, but no text or content from that book is included in or distributed by the app.

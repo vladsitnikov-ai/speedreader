@@ -311,6 +311,23 @@ func finalize(platform: String, versionString: String) throws {
 
 // MARK: - Prepare for submission (review contact, copyright, privacy answers, price)
 
+/// Updates only the Notes field of App Review Information, leaving contact/demo-account as is.
+func setNotes(platform: String, versionString: String, notes: String) throws {
+    let app = try findApp()
+    let appID = id(app)
+    guard let version = try versions(appID: appID, platform: platform).first(where: { (attrs($0)["versionString"] as? String) == versionString }) else {
+        throw APIError(status: 404, body: "no \(platform) version \(versionString)")
+    }
+    let versionID = id(version)
+    let details = try request("GET", "/v1/appStoreVersions/\(versionID)/appStoreReviewDetail")
+    if let detailID = (details["data"] as? [String: Any]).map(id), !detailID.isEmpty {
+        try request("PATCH", "/v1/appStoreReviewDetails/\(detailID)", json: ["data": ["type": "appStoreReviewDetails", "id": detailID, "attributes": ["notes": notes]]])
+    } else {
+        try request("POST", "/v1/appStoreReviewDetails", json: ["data": ["type": "appStoreReviewDetails", "attributes": ["notes": notes, "demoAccountRequired": false], "relationships": ["appStoreVersion": ["data": ["type": "appStoreVersions", "id": versionID]]]]])
+    }
+    print("NOTES updated (\(notes.count) chars)")
+}
+
 func prepare(platform: String, versionString: String) throws {
     let app = try findApp()
     let appID = id(app)
@@ -399,6 +416,20 @@ do {
     case "prepare":
         guard arguments.count >= 3 else { print("usage: asc prepare <IOS|MAC_OS> <version>"); exit(1) }
         try prepare(platform: Array(arguments)[1], versionString: Array(arguments)[2])
+    case "invite":
+        guard arguments.count >= 2 else { print("usage: asc invite <testerID>"); exit(1) }
+        let args = Array(arguments)
+        let appID = id(try findApp())
+        _ = try request("POST", "/v1/betaTesterInvitations", json: ["data": ["type": "betaTesterInvitations", "relationships": [
+            "betaTester": ["data": ["type": "betaTesters", "id": args[1]]],
+            "app": ["data": ["type": "apps", "id": appID]],
+        ]]])
+        print("INVITE sent")
+    case "notes":
+        guard arguments.count >= 4 else { print("usage: asc notes <IOS|MAC_OS> <version> <path-to-text-file>"); exit(1) }
+        let args = Array(arguments)
+        let text = try String(contentsOfFile: args[3], encoding: .utf8)
+        try setNotes(platform: args[1], versionString: args[2], notes: text)
     case "builds":
         let platform = arguments.count >= 2 ? Array(arguments)[1] : "IOS"
         let appID = id(try findApp())
@@ -408,6 +439,13 @@ do {
     case "get":
         let response = try request("GET", Array(arguments)[1])
         print(String(data: try JSONSerialization.data(withJSONObject: response, options: .prettyPrinted), encoding: .utf8) ?? "")
+    case "post", "patch":
+        let args = Array(arguments)
+        guard args.count >= 3 else { print("usage: asc \(args[0]) <path> <json-file>"); exit(1) }
+        let data = try Data(contentsOf: URL(fileURLWithPath: args[2]))
+        let json = try JSONSerialization.jsonObject(with: data)
+        let response = try request(args[0] == "post" ? "POST" : "PATCH", args[1], json: json)
+        print(String(data: try JSONSerialization.data(withJSONObject: response, options: .prettyPrinted), encoding: .utf8) ?? "OK")
     case "status":
         try status()
     case "sync":
