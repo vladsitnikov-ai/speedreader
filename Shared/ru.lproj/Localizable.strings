@@ -44,6 +44,7 @@
 "Couldn’t open this book’s PDF." = "Не удалось открыть PDF этой книги.";
 "Couldn’t open this PDF." = "Не удалось открыть этот PDF.";
 "No text layer was found on the selected pages — this is likely a scan without OCR." = "На выбранных страницах не найден текстовый слой — вероятно, это скан без OCR.";
+"This PDF's text layer looks corrupted — letters can't be read even though the pages display fine, usually because of a broken font in the file itself. Try re-creating the PDF with OCR (for example with ocrmypdf) and import it again." = "Текстовый слой этого PDF повреждён — буквы не читаются, хотя страницы отображаются нормально; обычно это из-за битого шрифта внутри самого файла. Попробуйте пересоздать PDF через OCR (например, ocrmypdf) и импортировать заново.";
 
 /* Reader */
 "Loading text…" = "Загружаю текст…";

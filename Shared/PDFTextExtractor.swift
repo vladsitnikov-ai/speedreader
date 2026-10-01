@@ -23,6 +23,7 @@ enum PDFTextExtractor {
     enum ExtractionError: LocalizedError {
         case cannotOpen
         case noText
+        case corruptedTextLayer
 
         var errorDescription: String? {
             switch self {
@@ -30,9 +31,17 @@ enum PDFTextExtractor {
                 return "Couldn’t open this PDF."
             case .noText:
                 return "No text layer was found on the selected pages — this is likely a scan without OCR."
+            case .corruptedTextLayer:
+                return "This PDF's text layer looks corrupted — letters can't be read even though the pages display fine, usually because of a broken font in the file itself. Try re-creating the PDF with OCR (for example with ocrmypdf) and import it again."
             }
         }
     }
+
+    /// Below this fraction of extracted "words" containing at least one letter, the text layer
+    /// is almost certainly broken (a malformed font's character codes don't map to real text) —
+    /// checked only once there's enough text to be a meaningful sample, not a short selection.
+    private static let minLetterWordFraction = 0.5
+    private static let minWordsForLetterCheck = 20
 
     /// Extracts a title and page count without reading the whole text body — used right after import.
     static func quickInfo(from url: URL) throws -> (title: String, pageCount: Int) {
@@ -101,6 +110,11 @@ enum PDFTextExtractor {
 
         let (words, wordPages, textHeadings) = tokenize(keptLines)
         guard !words.isEmpty else { throw ExtractionError.noText }
+        if words.count >= minWordsForLetterCheck {
+            let letterWordCount = words.count(where: { $0.contains(where: \.isLetter) })
+            let fraction = Double(letterWordCount) / Double(words.count)
+            guard fraction >= minLetterWordFraction else { throw ExtractionError.corruptedTextLayer }
+        }
 
         let outline = outlineHeadings(in: document, wordPages: wordPages)
         return ExtractedText(
