@@ -6,6 +6,7 @@ import SwiftUI
 struct ORPWordView: View {
     let word: String
     var highlightPivot: Bool = false
+    var readerFont: ReaderFont = .sans
     var fontSize: CGFloat = 56
 
     private var pivotIndex: Int {
@@ -36,7 +37,7 @@ struct ORPWordView: View {
     }
 
     private var wordFont: Font {
-        .system(size: fontSize, weight: .semibold, design: .monospaced)
+        readerFont.font(size: fontSize)
     }
 
     var body: some View {

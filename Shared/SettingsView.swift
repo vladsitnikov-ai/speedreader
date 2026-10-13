@@ -27,6 +27,14 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Picker("Word font", selection: $settings.readerFont) {
+                        ForEach(ReaderFont.allCases) { font in
+                            Text(LocalizedStringKey(font.label)).tag(font)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    ORPWordView(word: "Reading", highlightPivot: settings.highlightPivot, readerFont: settings.readerFont, fontSize: 34)
+                        .frame(height: 64)
                     Toggle("Highlight the fixation letter", isOn: $settings.highlightPivot)
                 } header: {
                     Text("Reading")

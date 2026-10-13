@@ -42,7 +42,7 @@ struct ReaderView: View {
     @ViewBuilder
     private var displayArea: some View {
         if let chunk = engine.currentChunk {
-            ORPWordView(word: chunk.text, highlightPivot: settings.highlightPivot)
+            ORPWordView(word: chunk.text, highlightPivot: settings.highlightPivot, readerFont: settings.readerFont)
         } else {
             VStack(spacing: 8) {
                 Image(systemName: "checkmark.circle")

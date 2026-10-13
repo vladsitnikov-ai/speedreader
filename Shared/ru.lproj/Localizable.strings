@@ -114,6 +114,10 @@
 "Light" = "Светлая";
 "Dark" = "Тёмная";
 "Reading" = "Чтение";
+"Word font" = "Шрифт слова";
+"Sans-serif" = "Без засечек";
+"Serif" = "С засечками";
+"Monospaced" = "Моноширинный";
 "Highlight the fixation letter" = "Подсвечивать букву фиксации";
 "Colors the letter in each word that's easiest to fixate on (ORP) and shows marks above and below it. Off by default — the word is just shown centered." = "Выделяет цветом букву в слове, на которой удобнее всего фиксировать взгляд (ORP), и показывает метки над и под ней. По умолчанию выключено — слово просто показывается по центру.";
 "About" = "О приложении";
