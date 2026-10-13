@@ -14,7 +14,7 @@
 
 /* Library */
 "Add Book" = "Добавить книгу";
-"Add a PDF, EPUB, or text file — pick one on disk or from Google Drive via the system file picker." = "Добавьте PDF, EPUB или текстовый файл — можно выбрать на диске или из Google Диска через системный проводник.";
+"Add a PDF, EPUB, FB2, or text file — pick one on disk or from Google Drive via the system file picker." = "Добавьте PDF, EPUB, FB2 или текстовый файл — можно выбрать на диске или из Google Диска через системный проводник.";
 "Read" = "Читать";
 "Bookmarks…" = "Закладки…";
 "Edition details…" = "Сведения об издании…";
@@ -44,15 +44,20 @@
 "Opening PDF…" = "Открываю PDF…";
 "Opening book…" = "Открываю книгу…";
 "Couldn’t open this book’s PDF." = "Не удалось открыть PDF этой книги.";
-"Couldn’t open this book’s EPUB." = "Не удалось открыть EPUB этой книги.";
+"Couldn’t open this book." = "Не удалось открыть эту книгу.";
 "Couldn’t open this PDF." = "Не удалось открыть этот PDF.";
 "Couldn’t open this file." = "Не удалось открыть этот файл.";
-"This file type isn’t supported — add a PDF, EPUB, or plain text file." = "Этот тип файла не поддерживается — добавьте PDF, EPUB или текстовый файл.";
-"No text layer was found on the selected pages — this is likely a scan without OCR." = "На выбранных страницах не найден текстовый слой — вероятно, это скан без OCR.";
-"This PDF's text layer looks corrupted — letters can't be read even though the pages display fine, usually because of a broken font in the file itself. Try re-creating the PDF with OCR (for example with ocrmypdf) and import it again." = "Текстовый слой этого PDF повреждён — буквы не читаются, хотя страницы отображаются нормально; обычно это из-за битого шрифта внутри самого файла. Попробуйте пересоздать PDF через OCR (например, ocrmypdf) и импортировать заново.";
+"This file type isn’t supported — add a PDF, EPUB, FB2, or plain text file." = "Этот тип файла не поддерживается — добавьте PDF, EPUB, FB2 или текстовый файл.";
+"No text layer was found on the selected pages — this is likely a scan. Recognize the text (OCR) to read it." = "На выбранных страницах нет текстового слоя — вероятно, это скан. Распознайте текст (OCR), чтобы читать.";
+"This PDF's text layer looks corrupted — letters can't be read even though the pages display fine, usually because of a broken font in the file itself. Recognize the text (OCR) to read it anyway." = "Текстовый слой этого PDF повреждён — буквы не читаются, хотя страницы отображаются нормально; обычно это из-за битого шрифта внутри файла. Распознайте текст (OCR), чтобы всё равно читать.";
+"Recognize text (OCR)" = "Распознать текст (OCR)";
+"Recognizing text… %d of %d pages" = "Распознаю текст… %d из %d стр.";
+"This runs on your device and can take a few minutes. Recognized text is saved, so it only happens once." = "Распознавание идёт на устройстве и может занять несколько минут. Результат сохраняется, так что это нужно один раз.";
 "Couldn’t open this EPUB." = "Не удалось открыть этот EPUB.";
 "No readable chapters were found in this EPUB." = "В этом EPUB не нашлось глав с читаемым текстом.";
 "Chapter %d" = "Глава %d";
+"Couldn’t open this FB2 book." = "Не удалось открыть эту FB2-книгу.";
+"No readable text was found in this FB2 book." = "В этой FB2-книге не нашлось читаемого текста.";
 "Couldn’t open this text file." = "Не удалось открыть этот текстовый файл.";
 "This text file appears to be empty." = "Этот текстовый файл выглядит пустым.";
 

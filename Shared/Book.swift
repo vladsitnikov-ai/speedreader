@@ -1,7 +1,7 @@
 import Foundation
 
 enum BookFormat: String, Codable {
-    case pdf, epub, txt
+    case pdf, epub, fb2, txt
 
     var fileExtension: String { rawValue }
 

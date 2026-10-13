@@ -26,7 +26,7 @@ struct LibraryView: View {
         }
         .fileImporter(
             isPresented: $isImporting,
-            allowedContentTypes: [.pdf, .epub, .plainText],
+            allowedContentTypes: [.pdf, .epub, .plainText] + [UTType(filenameExtension: "fb2"), .zip].compactMap { $0 },
             allowsMultipleSelection: false
         ) { result in
             handleImport(result)
@@ -90,7 +90,7 @@ struct LibraryView: View {
                 .foregroundStyle(.secondary)
             Text("Nothing here yet")
                 .font(.title2.bold())
-            Text("Add a PDF, EPUB, or text file — pick one on disk or from Google Drive via the system file picker.")
+            Text("Add a PDF, EPUB, FB2, or text file — pick one on disk or from Google Drive via the system file picker.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

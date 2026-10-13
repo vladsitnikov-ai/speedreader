@@ -65,7 +65,7 @@ struct PageSelectionView: View {
                 VStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 32))
-                    Text(book.format == .pdf ? "Couldn’t open this book’s PDF." : "Couldn’t open this book’s EPUB.")
+                    Text(book.format == .pdf ? "Couldn’t open this book’s PDF." : "Couldn’t open this book.")
                 }
                 .foregroundStyle(.secondary)
                 Spacer()
@@ -97,8 +97,11 @@ struct PageSelectionView: View {
             }
             applySelection(pageCount: document.pageCount)
             source = .pdf(document)
-        case .epub:
-            guard let titles = try? EPUBTextExtractor.chapterTitles(from: fileURL), !titles.isEmpty else {
+        case .epub, .fb2:
+            let loaded = book.format == .fb2
+                ? try? FB2TextExtractor.chapterTitles(from: fileURL)
+                : try? EPUBTextExtractor.chapterTitles(from: fileURL)
+            guard let titles = loaded, !titles.isEmpty else {
                 loadFailed = true
                 return
             }

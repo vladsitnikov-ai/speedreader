@@ -12,9 +12,9 @@ enum PDFTextExtractor {
             case .cannotOpen:
                 return "Couldn’t open this PDF."
             case .noText:
-                return "No text layer was found on the selected pages — this is likely a scan without OCR."
+                return "No text layer was found on the selected pages — this is likely a scan. Recognize the text (OCR) to read it."
             case .corruptedTextLayer:
-                return "This PDF's text layer looks corrupted — letters can't be read even though the pages display fine, usually because of a broken font in the file itself. Try re-creating the PDF with OCR (for example with ocrmypdf) and import it again."
+                return "This PDF's text layer looks corrupted — letters can't be read even though the pages display fine, usually because of a broken font in the file itself. Recognize the text (OCR) to read it anyway."
             }
         }
     }
@@ -38,15 +38,23 @@ enum PDFTextExtractor {
 
     /// Extracts words in reading order from the given (0-based) page indices, dropping page
     /// numbers and running headers/footers, and re-joining words hyphenated across lines.
-    static func extract(from url: URL, pages: [Int]) throws -> ExtractedText {
+    /// `ocrPages` holds recognised text for pages whose own text layer is missing or broken;
+    /// those pages use it instead and then go through the same cleanup as native text.
+    static func extract(from url: URL, pages: [Int], ocrPages: [Int: [String]] = [:]) throws -> ExtractedText {
         guard let document = PDFDocument(url: url) else {
             throw ExtractionError.cannotOpen
         }
 
         var pageLines: [(page: Int, lines: [String])] = []
         for index in pages {
-            guard let page = document.page(at: index) else { continue }
-            let lines = (page.string ?? "")
+            let rawText: String
+            if let ocr = ocrPages[index] {
+                rawText = ocr.joined(separator: "\n")
+            } else {
+                guard let page = document.page(at: index) else { continue }
+                rawText = page.string ?? ""
+            }
+            let lines = rawText
                 .replacingOccurrences(of: "\u{00AD}", with: "") // soft hyphens
                 .components(separatedBy: .newlines)
                 .map { $0.trimmingCharacters(in: .whitespaces) }

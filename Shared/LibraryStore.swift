@@ -14,7 +14,7 @@ final class LibraryStore: ObservableObject {
             case .cannotOpen:
                 return "Couldn’t open this file."
             case .unsupportedFormat:
-                return "This file type isn’t supported — add a PDF, EPUB, or plain text file."
+                return "This file type isn’t supported — add a PDF, EPUB, FB2, or plain text file."
             }
         }
     }
@@ -40,13 +40,20 @@ final class LibraryStore: ObservableObject {
         filesDir.appendingPathComponent("\(book.id.uuidString).\(book.format.fileExtension)")
     }
 
+    /// Recognised (OCR) text of a PDF whose own text layer is unusable; absent for most books.
+    func ocrURL(for book: Book) -> URL {
+        filesDir.appendingPathComponent("\(book.id.uuidString).ocr.json")
+    }
+
     func thumbnailURL(for book: Book) -> URL {
         thumbsDir.appendingPathComponent("\(book.id.uuidString).png")
     }
 
     @discardableResult
     func importBook(from sourceURL: URL) throws -> Book {
-        guard let format = BookFormat.from(fileExtension: sourceURL.pathExtension) else {
+        let isZippedFB2 = sourceURL.pathExtension.lowercased() == "zip"
+            && sourceURL.deletingPathExtension().pathExtension.lowercased() == "fb2"
+        guard let format = isZippedFB2 ? .fb2 : BookFormat.from(fileExtension: sourceURL.pathExtension) else {
             throw ImportError.unsupportedFormat
         }
 
@@ -84,6 +91,29 @@ final class LibraryStore: ObservableObject {
             try copy(sourceURL, to: destURL)
             let book = Book(
                 id: id, title: info.title, author: info.author, format: .epub, pageCount: info.pageCount,
+                selectedPages: [], dateAdded: Date(), bookmarkChunkIndex: 0, totalChunks: 0
+            )
+            books.insert(book, at: 0)
+            persist()
+            return book
+
+        case .fb2:
+            // A .fb2.zip holds the book as a single .fb2 entry — store it unpacked.
+            if isZippedFB2 {
+                guard let zip = try? MinimalZip(url: sourceURL),
+                      let entry = zip.paths.first(where: { $0.lowercased().hasSuffix(".fb2") }),
+                      let data = try? zip.contents(of: entry) else { throw ImportError.cannotOpen }
+                try? fileManager.removeItem(at: destURL)
+                try data.write(to: destURL)
+            } else {
+                try copy(sourceURL, to: destURL)
+            }
+            guard let info = try? FB2TextExtractor.quickInfo(from: destURL) else {
+                try? fileManager.removeItem(at: destURL)
+                throw ImportError.cannotOpen
+            }
+            let book = Book(
+                id: id, title: info.title, author: info.author, format: .fb2, pageCount: info.pageCount,
                 selectedPages: [], dateAdded: Date(), bookmarkChunkIndex: 0, totalChunks: 0
             )
             books.insert(book, at: 0)
@@ -136,6 +166,7 @@ final class LibraryStore: ObservableObject {
 
     func delete(_ book: Book) {
         try? fileManager.removeItem(at: fileURL(for: book))
+        try? fileManager.removeItem(at: ocrURL(for: book))
         try? fileManager.removeItem(at: thumbnailURL(for: book))
         books.removeAll { $0.id == book.id }
         persist()

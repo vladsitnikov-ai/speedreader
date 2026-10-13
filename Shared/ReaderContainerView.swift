@@ -16,11 +16,26 @@ struct ReaderContainerView: View {
     @State private var isShowingBookmarks = false
     @State private var isNamingBookmark = false
     @State private var isFindingPlace = false
+    @State private var ocrProgress: (done: Int, total: Int)?
+    @State private var ocrTask: Task<Void, Never>?
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
-            if let errorMessage {
+            if let ocrProgress {
+                VStack(spacing: 16) {
+                    ProgressView(value: Double(ocrProgress.done), total: Double(max(ocrProgress.total, 1)))
+                        .frame(maxWidth: 320)
+                    Text(String(format: NSLocalizedString("Recognizing text… %d of %d pages", comment: "OCR progress"), ocrProgress.done, ocrProgress.total))
+                    Text("This runs on your device and can take a few minutes. Recognized text is saved, so it only happens once.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                    Button("Cancel") { ocrTask?.cancel() }
+                }
+                .padding()
+            } else if let errorMessage {
                 VStack(spacing: 16) {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 40))
@@ -28,8 +43,14 @@ struct ReaderContainerView: View {
                     Text(LocalizedStringKey(errorMessage))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
-                    Button("Back to library", action: onClose)
-                        .buttonStyle(.borderedProminent)
+                    if canRecognizeText {
+                        Button("Recognize text (OCR)", action: startOCR)
+                            .buttonStyle(.borderedProminent)
+                        Button("Back to library", action: onClose)
+                    } else {
+                        Button("Back to library", action: onClose)
+                            .buttonStyle(.borderedProminent)
+                    }
                 }
                 .padding()
             } else if isLoading {
@@ -104,16 +125,52 @@ struct ReaderContainerView: View {
         }
     }
 
+    private var selectedPages: [Int] {
+        book.selectedPages.isEmpty ? Array(0..<book.pageCount) : book.selectedPages
+    }
+
+    /// OCR can rescue a PDF that has no (or unreadable) text of its own.
+    private var canRecognizeText: Bool {
+        book.format == .pdf && lastErrorIsTextLayer
+    }
+
+    @State private var lastErrorIsTextLayer = false
+
+    private func startOCR() {
+        let url = library.fileURL(for: book)
+        let cacheURL = library.ocrURL(for: book)
+        let pages = selectedPages
+        ocrProgress = (0, pages.count)
+        ocrTask = Task.detached(priority: .userInitiated) {
+            do {
+                try OCRTextRecognizer.recognize(pdfURL: url, pages: pages, cacheURL: cacheURL) { done in
+                    Task { @MainActor in ocrProgress = (done, pages.count) }
+                }
+                await MainActor.run {
+                    ocrProgress = nil
+                    errorMessage = nil
+                    isLoading = true
+                }
+                await loadBook()
+            } catch {
+                await MainActor.run { ocrProgress = nil }
+            }
+        }
+    }
+
     private func loadBook() async {
         do {
             let url = library.fileURL(for: book)
-            let pages = book.selectedPages.isEmpty ? Array(0..<book.pageCount) : book.selectedPages
+            let pages = selectedPages
             let extracted: ExtractedText
             switch book.format {
             case .pdf:
-                extracted = try PDFTextExtractor.extract(from: url, pages: pages)
+                let ocr = OCRTextRecognizer.load(from: library.ocrURL(for: book))
+                extracted = try PDFTextExtractor.extract(from: url, pages: pages, ocrPages: ocr)
             case .epub:
                 extracted = try EPUBTextExtractor.extract(from: url, pages: pages)
+            case .fb2:
+                extracted = try FB2TextExtractor.extract(from: url, pages: pages)
             case .txt:
                 extracted = try TxtTextExtractor.extract(from: url)
             }
@@ -133,6 +190,9 @@ struct ReaderContainerView: View {
                 isShowingPDF = true
             }
         } catch {
+            if let pdfError = error as? PDFTextExtractor.ExtractionError {
+                lastErrorIsTextLayer = pdfError == .noText || pdfError == .corruptedTextLayer
+            }
             errorMessage = error.localizedDescription
             isLoading = false
         }
